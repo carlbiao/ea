@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_rtc"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="2"
+    android:orientation="horizontal"
+    android:rowCount="3"
+    tools:context="com.hadutech.glasses.engineerapp.RTCActivity">
+
+    <!--标题栏-->
+    <RelativeLayout android:id="@+id/titleView"
+        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_alignParentTop="true"
+        android:background="#F0F0F0">
+        <TextView android:text="正在与xxxxx远程视频中" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            />
+    </RelativeLayout>
+
+
+    <LinearLayout android:id="@+id/controlView"
+        android:orientation="horizontal"
+        android:layout_height="75dp"
+        android:layout_width="match_parent"
+        android:background="#2F2F2F"
+        android:layout_alignParentBottom="true">
+        <Button android:id="@+id/detailButton"
+            android:text="详情"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            ></Button>
+        <Button android:id="@+id/voiceButton"
+            android:text="音量"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            ></Button>
+        <Button android:id="@+id/cutButton"
+            android:text="截图"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            ></Button>
+        <Button android:id="@+id/zoomButton"
+            android:text="缩放"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            ></Button>
+    </LinearLayout>
+    <LinearLayout android:id="@+id/statusView"
+        android:orientation="vertical"
+        android:layout_width="75dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_above="@id/controlView"
+        android:layout_below="@id/titleView"
+    android:background="#F0F0F0">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="wifi"/>
+        <TextView android:id="@+id/wifiStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="良好"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="音频"/>
+        <TextView android:id="@+id/videoStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="良好"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="麦克风"/>
+        <TextView android:id="@+id/audioStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="良好"/>
+    </LinearLayout>
+
+    <android.opengl.GLSurfaceView
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:id="@+id/videoView">
+    </android.opengl.GLSurfaceView>
+</RelativeLayout>
