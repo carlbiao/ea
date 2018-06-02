@@ -22,15 +22,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name="com.hadutech.glasses.engineerapp.LoginActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name="com.hadutech.glasses.engineerapp.MainActivity">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
         </activity>
         <activity
-            android:launchMode="singleTask"
             android:taskAffinity=""
             android:name="com.hadutech.glasses.engineerapp.RTCActivity"
             android:screenOrientation="landscape">
@@ -38,10 +39,7 @@
         </activity>
         <activity android:name="com.hadutech.glasses.engineerapp.RemoteVideoListActivity"
             android:label="远程视频列表">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
         </activity>
     </application>
 

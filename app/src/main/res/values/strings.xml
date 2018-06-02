@@ -1,3 +1,7 @@
 <resources>
+    <item name="Tag_Data" type="id"></item>
+    <item name="Tag_Listen" type="id"></item>
+    <string name="title_activity_login">Sign in</string>
+
     <string name="app_name">engineerApp</string>
 </resources>

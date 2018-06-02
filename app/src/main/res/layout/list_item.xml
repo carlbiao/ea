@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:descendantFocusability="blocksDescendants">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:background="#FFFFFF">
+
+        <LinearLayout
+            android:layout_width="250dp"
+            android:layout_height="90dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="250dp"
+                android:layout_height="40dp"
+                android:orientation="horizontal">
+
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:src="@drawable/ic_time"/>
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="250dp"
+            android:layout_height="20dp"
+            android:paddingLeft="5dp"
+            android:layout_marginTop="12dp"
+            android:textColor="#1D1D1C"
+            android:textSize="18dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="250dp"
+                android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="50dp"
+            android:layout_height="60dp"
+            android:paddingLeft="5dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="15dp"
+            android:layout_marginLeft="6dp"
+            android:textColor="#1D1D1C"
+            android:textSize="20dp" />
+
+            <TextView
+                android:id="@+id/number"
+                android:layout_width="190dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="4dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="15dp"
+                android:textColor="#1D1D1C"
+                android:textSize="20dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+        <Button
+            android:id="@+id/check"
+            android:layout_width="45dp"
+            android:layout_height="32dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="25dp"
+            android:text="查看"
+            android:textSize="14sp"
+            android:focusable="false"
+            android:textColor="#86B0FA"
+            android:background="@drawable/button_shape"
+            />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
