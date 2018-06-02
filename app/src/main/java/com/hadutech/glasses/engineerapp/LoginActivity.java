@@ -28,7 +28,7 @@ public class LoginActivity extends Activity {
     private boolean flag = false;
     private String result="";
     private boolean status=false;
-    private final static String PIC_URL = "http://118.89.163.26/glasses/api/getCaptcha";
+    //private final static String PIC_URL = "http://118.89.163.26/glasses/api/getCaptcha";
     private final static String LOGIN_URL = "http://118.89.163.26/glasses/login";
     //定义用户名，密码，验证码
     String n,p,v;
