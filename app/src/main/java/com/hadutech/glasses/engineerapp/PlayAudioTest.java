@@ -1,11 +1,9 @@
 package com.hadutech.glasses.engineerapp;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,8 +12,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.File;
-
 public class PlayAudioTest extends AppCompatActivity implements View.OnClickListener{
 
     private MediaPlayer mediaPlayer=new MediaPlayer();
@@ -23,7 +19,7 @@ public class PlayAudioTest extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_play_audio_test);
+        setContentView(R.layout.play_audio_test_activity);
         Button play=(Button)findViewById(R.id.play);
 //        Button pause=(Button)findViewById(R.id.pause);
         Button stop=(Button)findViewById(R.id.stop);
