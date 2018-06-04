@@ -15,7 +15,7 @@ public class RemoteVideo {
     /**
      * 历史留言
      */
-    public static final int TYPE_VOICE = 1;
+    public static final int TYPE_VOICE = 2;
 
     /**
      * 时间
