@@ -1,10 +1,13 @@
 package com.hadutech.glasses.engineerapp;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -12,9 +15,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class LoginActivity extends Activity {
     //声明变量
@@ -37,6 +48,8 @@ public class LoginActivity extends Activity {
     private Button updateDataBtn;//动态加载数据组件
 
     private List<String> dataList = new ArrayList<>();//存储数据
+
+    //TODO 实现登录，测试用户：666666(pwd123456)
 
 
     // 用于刷新界面
@@ -78,6 +91,26 @@ public class LoginActivity extends Activity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                /**
+                 * 处理所有逻辑的Handler
+                 */
+                @SuppressLint("HandlerLeak")
+                Handler rtcHandler = new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+
+                        if (msg.what == RtcClient.RTC_MESSAGE_TYPE_JOIN_COMPLETE) {
+                            //信令服务器连接成功回调
+                            Toast.makeText(LoginActivity.this, "连接服务器成功", Toast.LENGTH_SHORT).show();
+                        } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_ONLINE_ENGINEER_LIST) {
+                            //获取工程师（们）在线状态回调
+                            JSONObject jsonObject = (JSONObject) msg.obj;
+                            Log.e("LoginActivity", jsonObject.toString());
+
+                        }
+                    }
+                };
+                RtcClient.getInstance().connect(rtcHandler,"wyb","12345678",RtcClient.RTC_CLIENT_TYPE_ENGINEER);
 //                EditText name=(EditText)findViewById(R.id.name);
 //                n=name.getText().toString();
 //                EditText pwd=(EditText)findViewById(R.id.password);
@@ -85,9 +118,9 @@ public class LoginActivity extends Activity {
 //                EditText ver=(EditText)findViewById(R.id.textshow);
 //                v=ver.getText().toString();
 
-                Intent it=new Intent(LoginActivity.this,VideoList.class);
-                startActivity(it);
-                Log.e("MainAvtivity","onCreate execute");
+//                Intent it=new Intent(LoginActivity.this,VideoList.class);
+//                startActivity(it);
+//                Log.e("MainAvtivity","onCreate execute");
 
 //                new Thread(){
 //                    @Override
@@ -103,6 +136,8 @@ public class LoginActivity extends Activity {
 //                        }
 //                    }
 //                }.start();
+
+
 
 
             }
@@ -126,6 +161,18 @@ public class LoginActivity extends Activity {
 //                handler.sendEmptyMessage(2);
 //            };
 //          }.start();
+
+        HttpUtil.doGet("http://118.89.163.26/glasses/api/getCaptcha", new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("LoginActivity","doGet Failure");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.e("LoginActivity",response.body().string());
+            }
+        });
     }
 
 

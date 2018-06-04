@@ -4,41 +4,49 @@
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name=".EngineerApplication"
         android:theme="@style/AppTheme">
-        <activity android:name="com.hadutech.glasses.engineerapp.LoginActivity">
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.hadutech.glasses.engineerapp.MainActivity">
-
-        </activity>
+        <activity android:name=".MainActivity"></activity>
         <activity
-            android:taskAffinity=""
-            android:name="com.hadutech.glasses.engineerapp.RTCActivity"
-            android:screenOrientation="landscape">
-
+            android:name=".RTCActivity"
+            android:screenOrientation="landscape"
+            android:taskAffinity=""></activity>
+        <activity
+            android:name=".RemoteVideoListActivity"
+            android:label="远程视频列表" android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="my_action"/>
+                <category android:name="my_category"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
         </activity>
-        <activity android:name="com.hadutech.glasses.engineerapp.RemoteVideoListActivity"
-            android:label="远程视频列表">
+        <activity android:name=".taskDemo.TaskActivity">
 
         </activity>
     </application>

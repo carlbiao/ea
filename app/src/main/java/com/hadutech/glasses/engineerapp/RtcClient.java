@@ -9,6 +9,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,7 +56,6 @@ import okhttp3.OkHttpClient;
 public class RtcClient {
 
     //-----------类的静态常量部分-------------
-    private static final String host = "https://192.168.0.108:3000";
     public static final int RTC_CLIENT_TYPE_ENGINEER = 2;
     public static final int RTC_CLIENT_TYPE_EMPLOYEE = 1;
     public static final int RTC_MESSAGE_TYPE_JOIN_COMPLETE = 100;
@@ -164,7 +164,7 @@ public class RtcClient {
             opts.callFactory = okHttpClient;
             opts.webSocketFactory = okHttpClient;
 
-            rtcClient = IO.socket(host, opts);
+            rtcClient = IO.socket(ConfigData.WS_SOCKET_URL, opts);
             this.name = name;
             this.personId = personId;
             this.rtcType = type;
@@ -225,10 +225,11 @@ public class RtcClient {
                         peer.pc.createOffer(localSdpObserver, pcConstraints);
                     } else if (messageType.equals("call")) {
                         //收到员工的call
-                        Message message = new Message();
-                        message.what = RTC_MESSAGE_TYPE_CALL;
-                        message.obj = data.get("stream");
-                        rtcHandler.sendMessage(message);
+//                        Message message = new Message();
+//                        message.what = RTC_MESSAGE_TYPE_CALL;
+//                        message.obj = data.get("stream");
+//                        rtcHandler.sendMessage(message);
+                        EventBus.getDefault().post(new RtcEvent());
                     } else if (messageType.equals("offer")) {
                         //收到offer
                         onOffer((String) data.get("from"), data.getJSONObject("payload"));
