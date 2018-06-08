@@ -225,11 +225,11 @@ public class RtcClient {
                         peer.pc.createOffer(localSdpObserver, pcConstraints);
                     } else if (messageType.equals("call")) {
                         //收到员工的call
-//                        Message message = new Message();
-//                        message.what = RTC_MESSAGE_TYPE_CALL;
-//                        message.obj = data.get("stream");
-//                        rtcHandler.sendMessage(message);
-                        EventBus.getDefault().post(new RtcEvent());
+                        Message message = new Message();
+                        message.what = RTC_MESSAGE_TYPE_CALL;
+                        message.obj = data.get("stream");
+                        rtcHandler.sendMessage(message);
+                        //EventBus.getDefault().post(new RtcEvent());
                     } else if (messageType.equals("offer")) {
                         //收到offer
                         onOffer((String) data.get("from"), data.getJSONObject("payload"));
@@ -606,6 +606,7 @@ public class RtcClient {
                 rtcClient.emit("message", jsonObject);
                 sendMessage(this.remoteId, "answer", payload);
                 isSetLocal = true;
+                Log.e(TAG, "set Local SDP......");
                 pc.setLocalDescription(this, sdp);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -614,11 +615,15 @@ public class RtcClient {
 
         @Override
         public void onSetSuccess() {
-            Log.e(TAG, "set Remote SDP complete!");
+
             //设置本地则不需要答复了
             if (!isSetLocal) {
                 //创建答复
+                Log.e(TAG, "set Remote SDP complete!");
                 peer.pc.createAnswer(this, pcConstraints);
+            }else{
+                Log.e(TAG, "set Local SDP complete!");
+
             }
         }
 

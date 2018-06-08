@@ -18,36 +18,36 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name=".EngineerApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:name=".EngineerApplication"
         android:theme="@style/AppTheme">
-        <activity android:name=".LoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".MainActivity"></activity>
         <activity
             android:name=".RTCActivity"
-            android:screenOrientation="landscape"
-            android:taskAffinity=""></activity>
-        <activity
-            android:name=".RemoteVideoListActivity"
-            android:label="远程视频列表" android:launchMode="singleTask">
+            android:screenOrientation="landscape">
             <intent-filter>
-                <action android:name="my_action"/>
-                <category android:name="my_category"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".taskDemo.TaskActivity">
+        <activity android:name=".LoginActivity">
 
+        </activity>
+        <activity android:name=".MainActivity" />
+
+        <activity
+            android:name=".RemoteVideoListActivity"
+            android:label="远程视频列表"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="my_action" />
+                <category android:name="my_category" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 

@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Intent;
 import android.util.Log;
 
+import com.hadutech.glasses.engineerapp.events.RtcEvent;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
