@@ -19,8 +19,8 @@ import java.util.ArrayList;
 public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
 
     //定义两个类别标志
-    private static final int Type_Data=0;
-    private static final int Type_Listen=1;
+    private static final int TYPE_VOICE=0;
+    private static final int TYPE_RTC=1;
     private Context mContext;
     private ArrayList<Object> mData=null;
 
@@ -50,10 +50,10 @@ public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
     //多布局的核心，通过这个判断类别
     @Override
     public int getItemViewType(int position){
-        if (mData.get(position)instanceof WorkData){
-            return Type_Data;
-        }else if (mData.get(position)instanceof ListenDate){
-            return Type_Listen;
+        if (mData.get(position)instanceof RemoteVideo){
+            return TYPE_VOICE;
+        }else if (mData.get(position)instanceof RemoteVideo){
+            return TYPE_RTC;
         }else {
             return super.getItemViewType(position);
         }
@@ -72,33 +72,33 @@ public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
           ViewHolder2 holder2=null;
           if (convertView==null){
               switch (type){
-                  case Type_Data:
+                  case TYPE_VOICE:
                       holder1=new ViewHolder1();
                       convertView= LayoutInflater.from(mContext).inflate(R.layout.list_item,parent,false);
-                      holder1.date=(TextView)convertView.findViewById(R.id.date);
-                      holder1.name=(TextView)convertView.findViewById(R.id.name);
-                      holder1.number=(TextView)convertView.findViewById(R.id.number);
-                      holder1.check=(Button)convertView.findViewById(R.id.check);
+                      holder1.date=(TextView)convertView.findViewById(R.id.tv_date);
+                      holder1.name=(TextView)convertView.findViewById(R.id.tv_name);
+                      holder1.number=(TextView)convertView.findViewById(R.id.tv_number);
+                      holder1.check=(Button)convertView.findViewById(R.id.btn_check);
                       convertView.setTag(R.id.Tag_Data,holder1);
                       break;
-                  case Type_Listen:
+                  case TYPE_RTC:
                       holder2=new ViewHolder2();
                       convertView=LayoutInflater.from(mContext).inflate(R.layout.list_item2,parent,false);
-                      holder2.date2=(TextView)convertView.findViewById(R.id.date2);
-                      holder2.name2=(TextView)convertView.findViewById(R.id.name2);
-                      holder2.number2=(TextView)convertView.findViewById(R.id.number2);
-                      holder2.newIV=(TextView) convertView.findViewById(R.id.newIV);
-                      holder2.start=(Button)convertView.findViewById(R.id.start);
-                      holder2.stop=(Button)convertView.findViewById(R.id.stop);
+                      holder2.date2=(TextView)convertView.findViewById(R.id.tv_date2);
+                      holder2.name2=(TextView)convertView.findViewById(R.id.tv_name2);
+                      holder2.number2=(TextView)convertView.findViewById(R.id.tv_number2);
+                      holder2.newIV=(TextView) convertView.findViewById(R.id.tv_newIV);
+                      holder2.start=(Button)convertView.findViewById(R.id.btn_start);
+                      holder2.stop=(Button)convertView.findViewById(R.id.btn_stop);
                       convertView.setTag(R.id.Tag_Listen,holder2);
                       break;
               }
           }else {
               switch (type){
-                  case Type_Data:
+                  case TYPE_VOICE:
                       holder1=(ViewHolder1)convertView.getTag(R.id.Tag_Data);
                       break;
-                  case Type_Listen:
+                  case TYPE_RTC:
                       holder2=(ViewHolder2)convertView.getTag(R.id.Tag_Listen);
                       break;
               }
@@ -106,7 +106,7 @@ public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
           Object object=mData.get(position);
           //设置下控件的值
         switch (type){
-            case Type_Data:
+            case TYPE_VOICE:
                 WorkData workData=(WorkData) object;
                 if (workData!=null) {
                     holder1.date.setText(workData.getDate());
@@ -115,7 +115,7 @@ public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
                     Log.e("AdapterLayout", "getView");
                 }
                 break;
-            case Type_Listen:
+            case TYPE_RTC:
                 ListenDate listenDate=(ListenDate)object;
                 if (listenDate!=null){
                     holder2.date2.setText(listenDate.getDate2());
@@ -125,13 +125,6 @@ public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
                 break;
         }
 
-//        holder1.check.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                monItemButton.onCheck();
-//            }
-//        });
-//        holder1.check.setOnClickListener(this);
 
 
         return convertView;
@@ -162,17 +155,6 @@ public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
         notifyDataSetChanged();
     }
 
-    //用于回调的抽象类
-//    public static abstract class MyClickListener implements View.OnClickListener{
-//        @Override
-//        public void onClick(View v){
-//            myOnClick((Integer)v.getTag(),v);
-//        }
-//
-//        public abstract void myOnClick(int position,View v);
-//    }
-
-    //自定义接口，用于回调按钮点击事件到Activity
     public interface Callback{
         public void click(View view);
     }
@@ -181,24 +163,6 @@ public class AdapterLayout extends BaseAdapter implements View.OnClickListener{
     public void onClick(View view){
         mCallback.click(view);
     }
-
-//    public interface onItemButton{
-//        void onCheck();
-//    }
-//
-//    private onItemButton monItemButton;
-//
-//    public void setOnItemButton(onItemButton monItemButton){
-//        this.monItemButton=monItemButton;
-//    }
-//    @Override
-//    public void onClick(View view){
-//        switch (view.getId()){
-//            case R.id.check:
-//                Intent intent=new Intent(AdapterLayout.this,PlayAudioTest.class);
-//                startActivity(intent);
-//        }
-//    }
 
 
 }

@@ -90,7 +90,7 @@ public class HttpUtil {
     }
 
     /**
-     * 发送Get请求
+     * 发送Post请求
      * @param url
      * @param callback
      */
