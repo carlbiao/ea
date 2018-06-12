@@ -137,6 +137,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                     Boolean status=res.getBoolean("status");
                     Log.d(TAG, "status:"+status);
                     if (status){
+                        //调用获取员工信息接口
                         getMessage();
                     }else {
                         codeMsg=res.getString("msg");
@@ -195,7 +196,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                         editor.putBoolean("status", status);
                         editor.apply();
                     }
-                    Intent intent=new Intent(LoginActivity.this,VideoListActivity.class);
+                    Intent intent=new Intent(LoginActivity.this,VideoRecyclerActivity.class);
                     startActivity(intent);
                 }catch (Exception e){
                     e.printStackTrace();
