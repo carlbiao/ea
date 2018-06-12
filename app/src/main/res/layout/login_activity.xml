@@ -11,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="400dp"
         android:background="@drawable/pic_bg"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:orientation="vertical">
 
         <ImageView
@@ -33,39 +33,45 @@
             android:textColor="#FFFFFF"/>
 
         <LinearLayout
-            android:layout_width="400dp"
+            android:layout_width="match_parent"
             android:layout_height="212dp"
             android:layout_marginTop="50dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
             android:background="#FFFFFF"
             android:orientation="vertical">
+
+            <EditText
+                android:layout_width="0dp"
+                android:layout_height="0dp" />
 
 
             <EditText
                 android:id="@+id/name"
-                android:layout_width="315dp"
+                android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="40dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 android:textSize="15dp"
                 android:hint="请输入您的工号"
                 android:drawableLeft="@drawable/ic_identity_normal"
                 android:drawableRight="@drawable/ic_clear_normal"
-                android:background="@drawable/edittext_shape"/>
+                android:background="@drawable/all_edittext"/>
 
             <EditText
                 android:id="@+id/password"
-                android:layout_width="315dp"
+                android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="20dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:paddingLeft="8dp"
                 android:textSize="15dp"
                 android:hint="请输入密码"
                 android:inputType="textPassword"
                 android:drawableLeft="@drawable/ic_password_normal"
-                android:background="@drawable/edittext_shape2" />
+                android:background="@drawable/all_edittext" />
 
         </LinearLayout>
     </LinearLayout>
@@ -76,8 +82,10 @@
         android:orientation="vertical">
 
         <View
-            android:layout_width="356dp"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
             android:layout_gravity="center"
             android:background="#dbdde1"/>
 
@@ -86,18 +94,17 @@
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp">
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp">
 
-            <Button
-                android:id="@+id/Login"
+            <Button android:id="@+id/btn_forget_password"
                 android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:layout_height="40dp"
-                android:background="#EAEAEA"
+                android:background="#FFFFFF"
                 android:textColor="#34A7FF"
                 android:textSize="16sp"
-                android:elevation="3dp"
+                android:elevation="2dp"
                 android:text="忘记密码"/>
 
             <View
@@ -106,13 +113,14 @@
                 android:background="#dbdde1"/>
 
             <Button
+                android:id="@+id/btn_login"
                 android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:layout_height="40dp"
-                android:background="#EAEAEA"
+                android:background="#FFFFFF"
                 android:textColor="#34A7FF"
                 android:textSize="16sp"
-                android:elevation="3dp"
+                android:elevation="2dp"
                 android:text="登录"/>
 
         </LinearLayout>

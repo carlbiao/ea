@@ -32,7 +32,7 @@ public class ProjectMessage extends AppCompatActivity {
     private View.OnClickListener leftReturnListener=new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Intent intent=new Intent(ProjectMessage.this,VideoList.class);
+            Intent intent=new Intent(ProjectMessage.this,VideoListActivity.class);
             startActivity(intent);
         }
     };

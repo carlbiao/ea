@@ -1,19 +1,16 @@
 package com.hadutech.glasses.engineerapp;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Base64;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -21,227 +18,194 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends Activity implements View.OnClickListener{
+
+    private static final String TAG="LoginActivity";
     //声明变量
     private EditText nameInputText;
     private EditText passwordInputText;
-    private EditText verification;
-    private ImageView imgPic;
     private Button loginButton;
-    private Bitmap bitmap;
-    private String detail="";
-    private boolean flag = false;
-    private String result="";
-    private boolean status=false;
-    //private final static String PIC_URL = "http://118.89.163.26/glasses/api/getCaptcha";
-    private final static String LOGIN_URL = "http://118.89.163.26/glasses/login";
-    //定义用户名，密码，验证码
-    String n,p,v;
+    private Button forgetPwdButton = null;
+
+    //定义调用接口返回的信息
+    String codeMsg = null;
+    int engCode=0;
+    String engMsg=null;
+    //定义用户名，密码
+    private String name,password;
 
     private ListView testLv;//ListView组件
     private Button updateDataBtn;//动态加载数据组件
 
     private List<String> dataList = new ArrayList<>();//存储数据
 
-    //TODO 实现登录，测试用户：666666(pwd123456)
 
-
-    // 用于刷新界面
-//    private Handler handler = new Handler() {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            switch (msg.what) {
-//                case 1:
-//                  imgPic.setVisibility(View.VISIBLE);
-//                  imgPic.setImageBitmap(bitmap);
-//                  Toast.makeText(MainActivity.this, "验证码加载完毕", Toast.LENGTH_SHORT).show();
-//                  break;
-//                case 2:
-//
-//                    Toast.makeText(MainActivity.this,"请输入工号和密码",Toast.LENGTH_LONG).show();
-//            }
-//        }
-//
-//
-//    };
+    final Handler handler=new Handler(){
+        @Override
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case 2:
+                    Toast.makeText(LoginActivity.this,"网络链接异常",Toast.LENGTH_SHORT).show();
+                case 3:
+                    Toast.makeText(LoginActivity.this,codeMsg,Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "codeMsg:"+codeMsg);
 
 
 
+            }
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
         setViews();
+        bindEvents();
 
-
-
-
-        Log.i("GetUtils","");
-        //loginButton = findViewById(R.id.Login);
-//        verification=findViewById(R.id.textshow);
-//        nameInputText=findViewById(R.id.name);
-//        passwordInputText=findViewById(R.id.password);
-        loginButton=(Button)findViewById(R.id.Login);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                /**
-                 * 处理所有逻辑的Handler
-                 */
-                @SuppressLint("HandlerLeak")
-                Handler rtcHandler = new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-
-                        if (msg.what == RtcClient.RTC_MESSAGE_TYPE_JOIN_COMPLETE) {
-                            //信令服务器连接成功回调
-                            Toast.makeText(LoginActivity.this, "连接服务器成功", Toast.LENGTH_SHORT).show();
-                        } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_ONLINE_ENGINEER_LIST) {
-                            //获取工程师（们）在线状态回调
-                            JSONObject jsonObject = (JSONObject) msg.obj;
-                            Log.e("LoginActivity", jsonObject.toString());
-
-                        }
-                    }
-                };
-                RtcClient.getInstance().connect(rtcHandler,"wyb","12345678",RtcClient.RTC_CLIENT_TYPE_ENGINEER);
-//                EditText name=(EditText)findViewById(R.id.name);
-//                n=name.getText().toString();
-//                EditText pwd=(EditText)findViewById(R.id.password);
-//                p=pwd.getText().toString();
-//                EditText ver=(EditText)findViewById(R.id.textshow);
-//                v=ver.getText().toString();
-
-//                Intent it=new Intent(LoginActivity.this,VideoList.class);
-//                startActivity(it);
-//                Log.e("MainAvtivity","onCreate execute");
-
-//                new Thread(){
-//                    @Override
-//                    public void run(){
-//                        //boolean status;
-//
-//                        if (status=true){
-//                            Intent it=new Intent(MainActivity.this,VideoList.class);
-//                            startActivity(it);
-//
-//                        }else {
-//                            Toast.makeText(getApplicationContext(),"工号或密码错误",Toast.LENGTH_LONG).show();
-//                        }
-//                    }
-//                }.start();
-
-
-
-
-            }
-        });
-
-//        verification.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                sendHttpRequest();
-//            }
-//        });
-//        new Thread(){
-//            public void run(){
-//                result=PostUtils.LoginByPost(nameInputText.getText().toString(),
-//                        passwordInputText.getText().toString(),
-//                        verification.getText().toString());
-//                //引用谷歌的json包
-//                Gson gson=new Gson();
-//                ResultUser resultUser=gson.fromJson(result,ResultUser.class);
-//                status=resultUser.isStatus();
-//                handler.sendEmptyMessage(2);
-//            };
-//          }.start();
-
-        HttpUtil.doGet("http://118.89.163.26/glasses/api/getCaptcha", new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e("LoginActivity","doGet Failure");
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.e("LoginActivity",response.body().string());
-            }
-        });
     }
 
+    private void bindEvents(){
+        loginButton.setOnClickListener(this);
+        forgetPwdButton.setOnClickListener(this);
 
-
-
-
-    private void initView(){
-//        nameInputText=(EditText)findViewById(R.id.name);
-//        passwordInputText=(EditText)findViewById(R.id.password);
-//        verification=(EditText)findViewById(R.id.textshow);
-        loginButton=(Button)findViewById(R.id.Login);
     }
+
 
     private void setViews() {
-        //imgPic=(ImageView)findViewById(R.id.imgPic);
-        //verification=(EditText) findViewById(R.id.textshow);
-        loginButton=(Button)findViewById(R.id.Login);
-
+        nameInputText=(EditText)findViewById(R.id.name);
+        passwordInputText=(EditText)findViewById(R.id.password);
+        loginButton=(Button)findViewById(R.id.btn_login);
+        forgetPwdButton = findViewById(R.id.btn_forget_password);
     }
 
-//    private void sendHttpRequest(){
-//
-//        Thread sendThread = new Thread(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                URL url = null;
-//                try {
-//                    url = new URL(PIC_URL);
-//                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                    // 设置连接超时为5秒
-//                    conn.setConnectTimeout(5000);
-//                    // 设置请求类型为Get类型
-//                    conn.setRequestMethod("GET");
-//                    InputStream inStream = conn.getInputStream();
-//                    byte[] bt = StreamTool.read(inStream);
-//                    String msg = new String(bt);
-//                    bitmap = stringtoBitmap(msg);
-//
-//
-//                } catch (MalformedURLException e) {
-//                    e.printStackTrace();
-//                } catch (ProtocolException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//               handler.sendEmptyMessage(1);
-//            }
-//        });
-//        sendThread.start();
-//
-//    }
 
-
-
-    //解码
-    private Bitmap stringtoBitmap(String string){
-        Bitmap bitmap=null;
-
-        try {
-            byte[] bitmapArray = Base64.decode(string.split(",")[1], Base64.DEFAULT);
-            bitmap = BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length);
-        } catch (Exception e) {
-            e.printStackTrace();
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btn_login:
+                login();
+                break;
+            case R.id.btn_forget_password:
+                break;
         }
+    }
 
-        return bitmap;
+    private void login(){
+        //获取工号和密码
+        name=nameInputText.getText().toString().trim();
+        password=passwordInputText.getText().toString().trim();
+
+        //如果工号、密码为空则提示输入，如果错误则显示相应的错误
+        if (TextUtils.isEmpty(name)){
+            Toast.makeText(LoginActivity.this,"请输入工号",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(password)){
+            Toast.makeText(LoginActivity.this,"请输入密码",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Map<String,Object> postParams=new HashMap<String, Object>();
+        postParams.put("n",name);
+        postParams.put("p",password);
+
+        //调用登录接口
+        HttpUtil.doPost(ConfigData.REST_SERVICE_BASE_URL+"/login",postParams, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Message msg=new Message();
+                msg.what=2;
+                handler.sendMessage(msg);
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                //将返回的json字符串赋值给resultBody
+                String resultBody=response.body().string();
+                Log.d(TAG, "resultBody: "+resultBody);
+                try {
+                    //使用JSONObject解析登录之后得到的json字符串
+                    JSONObject obj=new JSONObject(resultBody);
+                    Log.d(TAG, ""+obj);
+                    JSONObject res=obj.getJSONObject("result");
+                    Boolean status=res.getBoolean("status");
+                    Log.d(TAG, "status:"+status);
+                    if (status){
+                        //调用获取员工信息接口
+                        getMessage();
+                    }else {
+                        codeMsg=res.getString("msg");
+                        Message msg=new Message();
+                        msg.what=3;
+                        handler.sendMessage(msg);
+                        return;
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    //调用获取员工信息的接口
+    private void getMessage(){
+        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/user/current", new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Message msg=new Message();
+                msg.what=2;
+                handler.sendMessage(msg);
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                //将员工信息的json赋值给engMessign
+                String engMessige=response.body().string();
+                try {
+                    //使用JSONObject解析员工信息
+                    JSONObject msgObj=new JSONObject(engMessige);
+                    engCode=msgObj.optInt("code");
+                    engMsg=msgObj.optString("msg");
+                    JSONObject resMsg=msgObj.optJSONObject("result");
+                    Log.d(TAG, "resMsg:"+resMsg);
+                    String user=resMsg.optString("a");
+                    String tellphone=resMsg.optString("te");
+                    String email=resMsg.optString("e");
+                    String phone=resMsg.optString("ph");
+                    String ID=resMsg.optString("i");
+                    String engineerName=resMsg.optString("rn");
+                    String name=resMsg.optString("n");
+                    Boolean status=resMsg.optBoolean("status");
+                    //判断是否获取员工信息，如果获取则将信息保存
+                    if (status!=false) {
+                        //使用SharedPreference将员工信息保存起来
+                        SharedPreferences.Editor editor = getSharedPreferences(ConfigData.SHARE_PREFERENCES_PREFIX, MODE_PRIVATE).edit();
+                        editor.putString("user", user);
+                        editor.putString("tellphone", tellphone);
+                        editor.putString("email", email);
+                        editor.putString("phone", phone);
+                        editor.putString("ID", ID);
+                        editor.putString("engineerName", engineerName);
+                        editor.putString("name", name);
+                        editor.putBoolean("status", status);
+                        editor.apply();
+                    }
+                    Intent intent=new Intent(LoginActivity.this,VideoRecyclerActivity.class);
+                    startActivity(intent);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void forgetPassword(){
+             //TODO 实现具体逻辑
     }
 }

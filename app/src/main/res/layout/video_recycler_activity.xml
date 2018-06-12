@@ -4,17 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#EFF4FA"
     android:orientation="vertical"
-    tools:context="com.hadutech.glasses.engineerapp.VideoListActivity">
+    tools:context="com.hadutech.glasses.engineerapp.VideoRecyclerActivity">
 
     <include layout="@layout/toolbar_layout"/>
 
-
-    <ListView
-        android:id="@+id/list_content"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    </ListView>
+
+    </android.support.v7.widget.RecyclerView>
 
 </LinearLayout>

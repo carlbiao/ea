@@ -29,7 +29,7 @@
 
 
         <TextView
-            android:id="@+id/date2"
+            android:id="@+id/tv_date2"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
            android:layout_marginLeft="4dp"
@@ -39,7 +39,7 @@
             android:textSize="18dp" />
 
             <TextView
-                android:id="@+id/newIV"
+                android:id="@+id/tv_newIV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -59,7 +59,7 @@
                 android:layout_height="50dp">
 
         <TextView
-            android:id="@+id/name2"
+            android:id="@+id/tv_name2"
             android:layout_width="50dp"
             android:layout_height="60dp"
             android:paddingLeft="5dp"
@@ -70,7 +70,7 @@
             android:textSize="20dp"/>
 
             <TextView
-                android:id="@+id/number2"
+                android:id="@+id/tv_number2"
                 android:layout_width="190dp"
                 android:layout_height="match_parent"
                 android:paddingTop="5dp"
@@ -89,7 +89,7 @@
             android:orientation="horizontal">
 
         <Button
-            android:id="@+id/start"
+            android:id="@+id/btn_start"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginLeft="1dp"
@@ -100,7 +100,7 @@
             android:background="@drawable/button_shape2"/>
 
         <Button
-            android:id="@+id/stop"
+            android:id="@+id/btn_stop"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginLeft="8dp"
