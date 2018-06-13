@@ -31,6 +31,7 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
 import java.net.URISyntaxException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -108,6 +109,7 @@ public class RtcClient {
     //private RtcListener rtcListener = null;
     private MediaStream localMediaStream = null;//本地媒体流
     private VideoSource videoSource = null;//本地视频源
+    private Gson gson = new Gson();
 
 
     //---------------处理信令服务器相关逻辑-------------
@@ -184,6 +186,50 @@ public class RtcClient {
             e.printStackTrace();
         } catch (URISyntaxException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void sendImageToPeer(String imageContent){
+        Long msgNum = System.currentTimeMillis();//使用时间戳作为消息编号
+        if(this.peer != null && this.peer.pc != null){
+            StringBuffer s = new StringBuffer(imageContent);
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("type","base64");
+            jsonObject.addProperty("content",imageContent);
+
+
+            String sendContent = gson.toJson(jsonObject);
+            StringBuilder stringBuilder = new StringBuilder(sendContent);
+            Log.e(TAG,sendContent);
+            int MAX_TRUNK = 30000;
+            int packageNum = (int) Math.ceil(sendContent.length()/MAX_TRUNK)+1;
+            for(int i = 0;i<packageNum;i++){
+                //如果content大于MAX_TRUNK长度，则分包发送
+                int end = (i+1) * MAX_TRUNK;
+                if(end >= stringBuilder.length()){
+                    end = stringBuilder.length();
+                }
+                String tmpContent = stringBuilder.substring(i*MAX_TRUNK,end);
+                JsonObject sendJsonObject = new JsonObject();
+                sendJsonObject.addProperty("id",msgNum);
+                sendJsonObject.addProperty("total",packageNum);
+                sendJsonObject.addProperty("content",tmpContent);
+                sendJsonObject.addProperty("index",i);
+
+                byte[] byteArray = tmpContent.getBytes();
+
+                DataChannel.Buffer buffer = new DataChannel.Buffer(ByteBuffer.wrap(gson.toJson(sendJsonObject).getBytes()),false);
+                this.peer.dataChannel.send(buffer);
+            }
+            //Gson gson = new Gson();
+//            gson.
+//            var sendContent = JSON.stringify({
+//                    type: type,
+//                    content: content
+//            });
+            //byte[] byteArray = imageContent.getBytes();
+//            DataChannel.Buffer buffer = new DataChannel.Buffer(ByteBuffer.wrap(imageContent.getBytes()),false);
+//            this.peer.dataChannel.send(buffer);
         }
     }
 
@@ -541,7 +587,7 @@ public class RtcClient {
             final byte[] bytes = new byte[data.capacity()];
             data.get(bytes);
             String msg = new String(bytes);
-            JsonObject msgJson = new Gson().fromJson(msg, JsonObject.class);
+            JsonObject msgJson = gson.fromJson(msg, JsonObject.class);
             String msgId = msgJson.get("id").getAsString();
             int total = msgJson.get("total").getAsInt();
             int index = msgJson.get("index").getAsInt();

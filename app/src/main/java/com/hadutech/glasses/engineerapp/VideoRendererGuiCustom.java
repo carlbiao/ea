@@ -9,6 +9,7 @@ import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;
 import android.opengl.EGLContext;
 import android.opengl.GLES20;
+import android.opengl.GLException;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.opengl.GLSurfaceView.Renderer;
@@ -226,79 +227,93 @@ public class VideoRendererGuiCustom implements Renderer {
         //截图
         try {
             if (shouldTakePic) {
-                Log.e(TAG, "开始截图......");
-                Long startTime = System.currentTimeMillis();
+//                Log.e(TAG, "开始截图......");
+//                Long startTime = System.currentTimeMillis();
+//
+//                shouldTakePic = false;
+//                int w = screenWidth;
+//                int h = screenHeight;
+//                int b[] = new int[(int) (w * h)];
+//                int bt[] = new int[(int) (w * h)];
+//                IntBuffer buffer = IntBuffer.wrap(b);
+//                buffer.position(0);
+//                Long tmp = System.currentTimeMillis();
+//
+//                GLES20.glReadPixels(0, 0, w, h, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
+//                Log.e(TAG,"Step1:" + String.valueOf(System.currentTimeMillis()-tmp));
+//                tmp = System.currentTimeMillis();
+//                for (int i = 0; i < h; i++) {
+//                    for (int j = 0; j < w; j++) {
+//                        int pix = b[i * w + j];
+//                        int pb = (pix >> 16) & 0xff;
+//                        int pr = (pix << 16) & 0x00ff0000;
+//                        int pix1 = (pix & 0xff00ff00) | pr | pb;
+//                        bt[(h - i - 1) * w + j] = pix1;
+//                    }
+//                }
+//                Log.e(TAG,"Step2:" + String.valueOf(System.currentTimeMillis()-tmp));
+//                tmp = System.currentTimeMillis();
+//                Bitmap inBitmap = null;
+//                if (inBitmap == null || !inBitmap.isMutable()
+//                        || inBitmap.getWidth() != w || inBitmap.getHeight() != h) {
+//                    inBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
+//                    //为了图像能小一点，使用了RGB_565而不是ARGB_8888
+//                }
+//                Log.e(TAG,"Step3:" + String.valueOf(System.currentTimeMillis()-tmp));
+//                tmp = System.currentTimeMillis();
+//                inBitmap.copyPixelsFromBuffer(buffer);
+//                Log.e(TAG,"Step4:" + String.valueOf(System.currentTimeMillis()-tmp));
+//                inBitmap = Bitmap.createBitmap(bt, w, h, Bitmap.Config.RGB_565);
+//                Long endTime = System.currentTimeMillis();
+//                Log.e(TAG, "截图完成......" + String.valueOf(endTime-startTime));
+
 
                 shouldTakePic = false;
-                int w = screenWidth;
-                int h = screenHeight;
-                int b[] = new int[(int) (w * h)];
-                int bt[] = new int[(int) (w * h)];
-                IntBuffer buffer = IntBuffer.wrap(b);
-                buffer.position(0);
-                Long tmp = System.currentTimeMillis();
-
-                GLES20.glReadPixels(0, 0, w, h, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
-                Log.e(TAG,String.valueOf(System.currentTimeMillis()-tmp));
-                tmp = System.currentTimeMillis();
-                for (int i = 0; i < h; i++) {
-                    for (int j = 0; j < w; j++) {
-                        int pix = b[i * w + j];
-                        int pb = (pix >> 16) & 0xff;
-                        int pr = (pix << 16) & 0x00ff0000;
-                        int pix1 = (pix & 0xff00ff00) | pr | pb;
-                        bt[(h - i - 1) * w + j] = pix1;
-                    }
-                }
-                Log.e(TAG,String.valueOf(System.currentTimeMillis()-tmp));
-                tmp = System.currentTimeMillis();
-                Bitmap inBitmap = null;
-                if (inBitmap == null || !inBitmap.isMutable()
-                        || inBitmap.getWidth() != w || inBitmap.getHeight() != h) {
-                    inBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
-                    //为了图像能小一点，使用了RGB_565而不是ARGB_8888
-                }
-                Log.e(TAG,String.valueOf(System.currentTimeMillis()-tmp));
-                tmp = System.currentTimeMillis();
-                inBitmap.copyPixelsFromBuffer(buffer);
-                Log.e(TAG,String.valueOf(System.currentTimeMillis()-tmp));
-                inBitmap = Bitmap.createBitmap(bt, w, h, Bitmap.Config.RGB_565);
-                Long endTime = System.currentTimeMillis();
-                Log.e(TAG, "截图完成......" + String.valueOf(endTime-startTime));
                 ScreenShotEvent event = new ScreenShotEvent();
-                event.setBitmap(inBitmap);
+                event.setBitmap(createBitmapFromGLSurface(0,0,screenWidth,screenHeight,unused));
                 EventBus.getDefault().post(event);
-                //Log.e(TAG, String.valueOf(inBitmap.getWidth()));
-                //保存图片到本地
-//                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//                    inBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bos);
-//                    byte[] bitmapData = bos.toByteArray();
-//                    ByteArrayInputStream fis = new ByteArrayInputStream(bitmapData);
-//                    String tempPicFile = "temp_" + System.currentTimeMillis() + ".jpeg";
-//                    tempDir = new File(Environment.getExternalStorageDirectory() + File.separator +
-//                            "SurfaceScreenShot" + File.separator + "Images");
-//                    tempDir.mkdirs();
-//                    try {
-//                        File tmpFile = new File(tempDir, tempPicFile);
-//                        FileOutputStream fos = new FileOutputStream(tmpFile);
-//                        byte[] buf = new byte[1024];
-//                        int len;
-//                        while ((len = fis.read(buf)) > 0) {
-//                            fos.write(buf, 0, len);
-//                        }
-//                        fis.close();
-//                        fos.close();
-//                        inBitmap.recycle();
-//                    } catch (FileNotFoundException e) {
-//                        e.printStackTrace();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    //TODO 这个截屏第一次比较慢，没有好的解决办法
+    private Bitmap createBitmapFromGLSurface(int x, int y, int w, int h, GL10 gl)
+            throws OutOfMemoryError {
+        Long tmp = System.currentTimeMillis();
+        int bitmapBuffer[] = new int[w * h];
+        int bitmapSource[] = new int[w * h];
+        IntBuffer intBuffer = IntBuffer.wrap(bitmapBuffer);
+        intBuffer.position(0);
+        Log.e(TAG,"Step1:" + String.valueOf(System.currentTimeMillis()-tmp));
+        tmp = System.currentTimeMillis();
+
+        try {
+            gl.glReadPixels(x, y, w, h, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, intBuffer);
+            Log.e(TAG,"Step2:" + String.valueOf(System.currentTimeMillis()-tmp));
+            tmp = System.currentTimeMillis();
+            int offset1, offset2;
+            for (int i = 0; i < h; i++) {
+                offset1 = i * w;
+                offset2 = (h - i - 1) * w;
+                for (int j = 0; j < w; j++) {
+                    int texturePixel = bitmapBuffer[offset1 + j];
+                    int blue = (texturePixel >> 16) & 0xff;
+                    int red = (texturePixel << 16) & 0x00ff0000;
+                    int pixel = (texturePixel & 0xff00ff00) | red | blue;
+                    bitmapSource[offset2 + j] = pixel;
+                }
+            }
+            Log.e(TAG,"Step3:" + String.valueOf(System.currentTimeMillis()-tmp));
+            tmp = System.currentTimeMillis();
+        } catch (GLException e) {
+            return null;
+        }
+
+        return Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
     }
 
     static {

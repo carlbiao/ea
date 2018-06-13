@@ -4,10 +4,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
@@ -17,15 +15,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AbsoluteLayout;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -34,6 +29,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dyhdyh.widget.loading.bar.LoadingBar;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -42,21 +38,10 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.webrtc.EglBase;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
-import org.webrtc.VideoRendererGui;
 
-import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import com.hadutech.glasses.engineerapp.R;
-import com.hadutech.glasses.engineerapp.events.RtcEvent;
 import com.hadutech.glasses.engineerapp.events.ScreenShotEvent;
-
-import okhttp3.Call;
-import okhttp3.Response;
 
 
 public class RTCActivity extends Activity implements View.OnClickListener,View.OnTouchListener {
@@ -77,7 +62,17 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     private RelativeLayout screenShotsContainer = null;
     private Boolean isZoom = false;
     private int zoomScale = 1;
-    private Point screenSize = new Point();;
+    private Point screenSize = new Point();
+    private FrameLayout parent = null;
+    private int actionDownStartX;
+    private int actionDownStartY;
+    private Handler screenshotHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            closeScreenshot();
+            LoadingBar.cancel(parent);
+        }
+    };
 
     /**
      * 处理所有逻辑的Handler
@@ -218,6 +213,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         getWindowManager().getDefaultDisplay().getSize(screenSize);
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(screenSize.x,screenSize.y);
         remoteVideoView.setLayoutParams(layoutParams);
+        parent = findViewById(R.id.fl_rtc_container);
     }
 
     /**
@@ -302,6 +298,11 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
         remoteVideoView.setOnTouchListener(this);
 
+        ImageView sendImage = findViewById(R.id.img_rtc_send);
+        sendImage.setOnClickListener(this);
+
+        ImageView cancleImage = findViewById(R.id.img_rtc_cancle);
+        cancleImage.setOnClickListener(this);
 
     }
 
@@ -339,6 +340,11 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         super.onDestroy();
         Log.e(RTCActivity.class.getName(),"onDestroy");
         EventBus.getDefault().unregister(this);
+    }
+
+    private void showLoading(int type){
+        ExLoadingFactory factory = new ExLoadingFactory(type);
+        LoadingBar.make(parent,factory).show();
     }
 
 
@@ -416,42 +422,18 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         }
     }
 
-    /**
-     * 对View进行量测，布局后截图
-     *
-     * @param view
-     * @return
-     */
-    private Bitmap convertViewToBitmap(View view) {
-        //remoteVideoView.setR
-        view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-        view.setDrawingCacheEnabled(true);
-        view.buildDrawingCache();
-        Bitmap bitmap = view.getDrawingCache();
-        return bitmap;
-    }
 
     private void startScreenShort(){
-//        isScreenShots = !isScreenShots;
-//        if(isScreenShots){
-//            remoteVideoView.setVisibility(View.GONE);
-//        }else{
-//            remoteVideoView.setVisibility(View.VISIBLE);
-//        }
-
+        showLoading(ExLoadingFactory.TYPE_SCREEN_SHOT);
         VideoRendererGuiCustom.takePic();
-//        isScreenShots = true;
-//
-//        screenShotsView.setBitmap(convertViewToBitmap(remoteVideoView));
-//        screenShotsContainer.setVisibility(View.VISIBLE);
-//        screenShotsView.invalidate();
+
 
     }
 
     //接收截图事件
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void userEventBus(ScreenShotEvent event){
+        LoadingBar.cancel(parent);
         //启动接听列表Activity
         Bitmap bitmap = event.getBitmap();
         Log.e(TAG,"Get ScreenShot");
@@ -459,16 +441,21 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         isScreenShots = true;
         remoteVideoView.setVisibility(View.GONE);
         screenShotsView.setBitmap(bitmap);
+        screenShotsView.reset();
         screenShotsContainer.setVisibility(View.VISIBLE);
 //        screenShotsView.invalidate();
+    }
+
+    private void closeScreenshot(){
+        remoteVideoView.setVisibility(View.VISIBLE);
+        screenShotsContainer.setVisibility(View.GONE);
+        isScreenShots = false;
     }
 
     @Override
     public void onBackPressed() {
         if(isScreenShots){
-            remoteVideoView.setVisibility(View.VISIBLE);
-            screenShotsContainer.setVisibility(View.GONE);
-            isScreenShots = false;
+            closeScreenshot();
         }else{
             super.onBackPressed();
         }
@@ -489,10 +476,37 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 Log.e(TAG,"截图");
                 startScreenShort();
                 break;
+            case R.id.img_rtc_cancle:
+                closeScreenshot();
+                break;
+            case R.id.img_rtc_send:
+                showLoading(ExLoadingFactory.TYPE_SEND_MESSAGE);
+                sendImage();
+                break;
         }
     }
 
-    int actionDownStartX,actionDownStartY;
+    /**
+     * 发送图片
+     */
+    private void sendImage(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String imageContent = "data:image/png;base64," + screenShotsView.getBase64ImageContent();
+                RtcClient.getInstance().sendImageToPeer(imageContent);
+                screenshotHandler.sendEmptyMessage(0);
+//                closeScreenshot();
+//                LoadingBar.cancel(parent);
+            }
+        }).start();
+
+        //Log.e(TAG,);
+        //发送图片
+
+    }
+
+
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {

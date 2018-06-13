@@ -11,4 +11,6 @@
     <color name="button_hangup">#ff0000</color>
     <color name="button_hangup_text">#fff</color>
     <color name="button_hangup_press">#990000</color>
+
+    <color name="draw_stroke_red">#ff0000</color>
 </resources>

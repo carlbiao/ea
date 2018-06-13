@@ -1,47 +1,30 @@
-package com.hadutech.glasses.engineerapp;
+package com.hadutech.glasses.engineerapp.demo;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Base64;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.hadutech.glasses.engineerapp.R;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
-public class ScreenShotsView extends View {
-    private static final String TAG = "ScreenShotsView";
-
-    public Bitmap getBitmap() {
-        return bitmap;
+public class DrawView extends View {
+    public DrawView(Context context) {
+        super(context);
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
-    }
-
-    private Bitmap bitmap = null;
-    Paint paint;
-
-    private float startX = 0;
-    private float startY = 0;
-
-    /**
-     * 用来保存绘制的路径
-     */
-    ArrayList<PathModel> paths;
-    private int color;
-    private int width = 4;
-    private Path path;
-
-    public ScreenShotsView(Context context, AttributeSet attrs) {
-        super(context,attrs);
+    public DrawView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
         //初始化画笔
         color = getResources().getColor(R.color.draw_stroke_red);
         paint = new Paint();
@@ -51,25 +34,28 @@ public class ScreenShotsView extends View {
         paint.setStyle(Paint.Style.STROKE);
         paths = new ArrayList<>();
     }
-    public ScreenShotsView(Context context, AttributeSet attrs, int defStyle) {
-        super(context,attrs,defStyle);
+
+    public DrawView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
-    public ScreenShotsView(Context context) {
-        super(context);
-    }
+    Paint paint;
 
-//    @Override
-//    protected void onDraw(Canvas canvas){
-//        Log.e(TAG,"onDraw");
-//        if(bitmap != null){
-//            canvas.drawBitmap(bitmap,0,0,null);
-//            Log.e(TAG,"Draw bitmap");
-//        }
-//        //drawPaths(canvas);
-//    }
+    float startX = 0;
+    float startY = 0;
 
-    private void drawPaths(Canvas canvas){
+    /**
+     * 用来保存绘制的路径
+     */
+    ArrayList<PathModel> paths;
+    private int color;
+    private int width = 4;
+    private Path path;
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
         /**
          * 循环绘制集合里面的路径
          */
@@ -80,6 +66,7 @@ public class ScreenShotsView extends View {
             paint.setColor(p.getColor());
             canvas.drawPath(p.getPath(), paint);
         }
+
     }
 
     @Override
@@ -112,50 +99,6 @@ public class ScreenShotsView extends View {
         return true;
     }
 
-    public void reset(){
-        paths.clear();
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-        if(bitmap != null){
-            canvas.drawBitmap(bitmap,0,0,null);
-            Log.e(TAG,"Draw bitmap");
-        }
-        drawPaths(canvas);
-    }
-
-    /**
-     * 获取base64格式的截图和标注信息
-     * @return
-     */
-    public String getBase64ImageContent(){
-        int w = this.getWidth();
-        int h = this.getHeight();
-
-        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(bmp);
-
-        c.drawColor(Color.WHITE);
-
-        /** 如果不设置canvas画布为白色，则生成透明 */
-
-        //this.layout(0, 0, w, h);
-        this.draw(c);
-
-        //
-        //convert to byte array
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        byte[] bytes = baos.toByteArray();
-
-        //base64 encode
-        byte[] encode = Base64.encode(bytes,Base64.DEFAULT);
-        String encodeString = new String(encode);
-        return encodeString;
-    }
-
     class PathModel{
         float width;
         int color;
@@ -185,6 +128,7 @@ public class ScreenShotsView extends View {
             this.path = path;
         }
     }
+
 
 
 }

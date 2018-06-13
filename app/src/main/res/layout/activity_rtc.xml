@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/fl_rtc_container"
     tools:context="com.hadutech.glasses.engineerapp.RTCActivity">
 
     <android.opengl.GLSurfaceView
@@ -153,6 +154,26 @@
         <com.hadutech.glasses.engineerapp.ScreenShotsView
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:background="#29ff0000"
-            android:id="@+id/ssv_rtc_screenshots"/>
+            android:id="@+id/ssv_rtc_screenshots"
+            android:layout_alignParentLeft="true"/>
+        <RelativeLayout
+            android:layout_alignParentRight="true"
+            android:layout_width="40dp"
+            android:background="#ffffffff"
+            android:gravity="center_horizontal"
+            android:layout_height="match_parent">
+            <ImageView android:id="@+id/img_rtc_cancle"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="30dp"
+                android:src="@drawable/ic_close"/>
+            <ImageView android:id="@+id/img_rtc_send"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_above="@id/img_rtc_cancle"
+                android:layout_marginBottom="30dp"
+                android:src="@drawable/ic_reply"/>
+        </RelativeLayout>
     </RelativeLayout>
 </FrameLayout>
