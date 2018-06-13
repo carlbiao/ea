@@ -209,10 +209,10 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                         editor.putInt("time",loginTime);
                         editor.apply();
                     }
-                    Intent intent=new Intent(LoginActivity.this,IssueCodeActivity.class);
-                    startActivity(intent);
-//                    Intent intent=new Intent(LoginActivity.this,VideoRecyclerActivity.class);
+//                    Intent intent=new Intent(LoginActivity.this,IssueCodeActivity.class);
 //                    startActivity(intent);
+                    Intent intent=new Intent(LoginActivity.this,VideoRecyclerActivity.class);
+                    startActivity(intent);
                 }catch (Exception e){
                     e.printStackTrace();
                 }

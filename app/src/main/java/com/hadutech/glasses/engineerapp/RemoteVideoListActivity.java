@@ -31,7 +31,7 @@ public class RemoteVideoListActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer = null;
     private AlertDialog.Builder alertBuilder = null;
-    private RemoteVideoAdapter adapter = null;
+//    private RemoteVideoAdapter adapter = null;
     Handler _handler = null;
 
 
@@ -54,20 +54,20 @@ public class RemoteVideoListActivity extends AppCompatActivity {
      * 初始化界面
      */
     private void initView(){
-        adapter = new RemoteVideoAdapter(list,RemoteVideoListActivity.this);
-        ListView listView = (ListView) findViewById(R.id.listview);
-        adapter.setOnInnerItemOnClickListener(new RemoteVideoAdapter.InnerItemOnclickListener() {
-            @Override
-            public void itemClick(View v) {
-                RemoteVideo remoteVideo = (RemoteVideo) v.getTag();
-                if(v.getId() == R.id.button_answer){
-                    answerCall(remoteVideo);
-                }else if(v.getId() == R.id.button_hangup){
-                    Toast.makeText(getBaseContext(),"挂断",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        listView.setAdapter(adapter);
+//        adapter = new RemoteVideoAdapter(list,RemoteVideoListActivity.this);
+//        ListView listView = (ListView) findViewById(R.id.listview);
+//        adapter.setOnInnerItemOnClickListener(new RemoteVideoAdapter.InnerItemOnclickListener() {
+//            @Override
+//            public void itemClick(View v) {
+//                RemoteVideo remoteVideo = (RemoteVideo) v.getTag();
+//                if(v.getId() == R.id.button_answer){
+//                    answerCall(remoteVideo);
+//                }else if(v.getId() == R.id.button_hangup){
+//                    Toast.makeText(getBaseContext(),"挂断",Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
+//        listView.setAdapter(adapter);
     }
 
     private void answerCall(RemoteVideo remoteVideo){
@@ -127,7 +127,7 @@ public class RemoteVideoListActivity extends AppCompatActivity {
             item.setId("18373918700");
             item.setName("燕青");
             item.setTime((String) DateFormat.format("yyyy-MM-dd HH:mm:ss", new Date()));
-            adapter.add(item);
+//            adapter.add(item);
         }
     };
 
@@ -169,7 +169,7 @@ public class RemoteVideoListActivity extends AppCompatActivity {
         }
         item.setType(RemoteVideo.TYPE_RTC);
         item.setRemoteSocketId(streamId);
-        adapter.add(0,item);
+//        adapter.add(0,item);
         startAlarm();
     }
 

@@ -95,8 +95,7 @@ public class IssueCodeActivity extends AppCompatActivity {
     private View.OnClickListener leftReturnListener=new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Intent intent=new Intent(IssueCodeActivity.this,VideoListActivity.class);
-            startActivity(intent);
+            finish();
         }
     };
 }

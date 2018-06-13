@@ -1,19 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_pressed="true"><shape>
-        <solid android:color="@color/button_hangup_press" />
-        <stroke android:width="1dp" android:color="@color/button_hangup_press" />
-        <corners android:radius="@dimen/button_answer_corner_radius"/>
-    </shape></item>
-    <!--<item android:state_enabled="false"><shape>-->
-        <!--<solid android:color="@color/bbutton_danger_disabled" />-->
-        <!--<stroke android:width="1dp" android:color="@color/bbutton_danger_disabled_edge" />-->
-        <!--<corners android:radius="@dimen/bbuton_rounded_corner_radius"/>-->
-    <!--</shape></item>-->
-    <item><shape>
-        <solid android:color="@color/button_hangup" />
-        <stroke android:width="1dp" android:color="@color/button_hangup" />
-        <corners android:radius="@dimen/button_answer_corner_radius"/>
+    <item><shape android:shape="oval">
+        <size android:height="50dp" android:width="50dp"></size>
+        <solid android:color="#FF7070"/>
     </shape></item>
 
 

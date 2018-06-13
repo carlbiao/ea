@@ -48,15 +48,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".taskDemo.TaskActivity" />
         <activity
             android:name=".VideoRecyclerActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:configChanges="screenSize|keyboardHidden|orientation"/>
         <activity
-            android:name=".VideoListActivity"
+            android:name=".IssueCodeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity android:name=".IssueCodeActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
     </application>
 
 </manifest>
