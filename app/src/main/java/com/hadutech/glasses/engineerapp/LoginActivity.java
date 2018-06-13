@@ -15,6 +15,9 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.hadutech.glasses.engineerapp.events.RtcEvent;
+
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -45,7 +48,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     int engCode=0;
     String engMsg=null;
     //定义用户名，密码
-    private String name,password;
+    private String name = "";
+    private String password = "";
 
     private ListView testLv;//ListView组件
     private Button updateDataBtn;//动态加载数据组件
@@ -62,21 +66,19 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                 case 3:
                     Toast.makeText(LoginActivity.this,codeMsg,Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "codeMsg:"+codeMsg);
-
-
-
             }
         }
     };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(loginDerect()){
+            login();
+            return;
+        }
         setContentView(R.layout.login_activity);
         setViews();
         bindEvents();
-
-
-
     }
 
     private void bindEvents(){
@@ -106,9 +108,12 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     }
 
     private void login(){
-        //获取工号和密码
-        name=nameInputText.getText().toString().trim();
-        password=passwordInputText.getText().toString().trim();
+        if(name == "" || password == ""){
+            //获取工号和密码
+            name=nameInputText.getText().toString().trim();
+            password=passwordInputText.getText().toString().trim();
+        }
+
 
         //如果工号、密码为空则提示输入，如果错误则显示相应的错误
         if (TextUtils.isEmpty(name)){
@@ -207,17 +212,46 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                         editor.putBoolean("status", status);
                         //将获取的时间保存起来
                         editor.putInt("time",loginTime);
+                        editor.putString("password",password);
                         editor.apply();
                     }
-//                    Intent intent=new Intent(LoginActivity.this,IssueCodeActivity.class);
-//                    startActivity(intent);
+                    RtcEvent event = new RtcEvent(RtcEvent.EVENT_TYPE_WILL_CONNECT_SOCKET);
+                    event.setName(engineerName);
+                    event.setPersonId(name);
+                    EventBus.getDefault().post(event);
                     Intent intent=new Intent(LoginActivity.this,VideoRecyclerActivity.class);
                     startActivity(intent);
+                    finish();
+
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         });
+    }
+
+    /**
+     * 是否直接登录
+     * @return
+     */
+    private boolean loginDerect() {
+        SharedPreferences preferences = getSharedPreferences(ConfigData.SHARE_PREFERENCES_PREFIX, MODE_PRIVATE);
+        name = preferences.getString("name", "");
+        password = preferences.getString("password", "");
+
+
+        //判断信息是否存在，如果不存在，则返回登录
+        if (name == "" || password == "") {
+            return false;
+        }
+
+        //登录时的系统时间
+        int loginTime = preferences.getInt("time", 1);
+        long time = System.currentTimeMillis() / 1000;
+        int nowTime = new Long(time).intValue();
+        //用现在的系统时间减去登录时的系统时间，如果超过3600秒，则返回登录界面，否则跳转至列表活动
+        return (nowTime - loginTime) < ConfigData.LOGIN_TIME;
+
     }
 
 

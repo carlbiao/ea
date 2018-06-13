@@ -2,6 +2,30 @@ package com.hadutech.glasses.engineerapp.events;
 
 public class RtcEvent {
 
+    /**
+     * 需要连接信令服务器
+     */
+    public static final int EVENT_TYPE_WILL_CONNECT_SOCKET = 1;
+
+    /**
+     * 有员工呼叫
+     */
+    public static final int EVENT_TYPE_ON_CALL = 2;
+
+    public RtcEvent(int type){
+        this.type = type;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    private int type;
+
     public String getName() {
         return name;
     }
