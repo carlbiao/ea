@@ -1,7 +1,14 @@
 package com.hadutech.glasses.engineerapp;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
@@ -9,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -18,7 +26,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class IssueCodeActivity extends AppCompatActivity {
+public class IssueCodeActivity extends AppCompatActivity implements View.OnClickListener{
 
     private static final String TAG="IssueCodeActivity";
 
@@ -26,9 +34,63 @@ public class IssueCodeActivity extends AppCompatActivity {
     private Button play_music;
     //设置一个用户id，用于获取用户信息接口
     private String user_id;
+    private String project_name;
+    private String veh_no;
+    private String part_no;
+    private String station_name;
+    private String problems;
+    private String name;
+    private String duty_name;
+    private String org_name;
+    private String voice;
+    private MediaPlayer mediaPlayer=new MediaPlayer();
+
+
 
     //TODO 需要根据上一个Activity传值
     private String code = "";
+
+    private Handler handler=new Handler(){
+      @Override
+      public void handleMessage(Message msg){
+          switch (msg.what){
+              case 1:
+                  project_name=msg.getData().getString("project_name");
+                  Log.d(TAG, "handleMessage:"+project_name);
+                  veh_no=msg.getData().getString("veh_no");
+                  part_no=msg.getData().getString("part_no");
+                  station_name=msg.getData().getString("station_name");
+                  user_id=msg.getData().getString("user_id");
+                  problems=msg.getData().getString("problems");
+                  voice=msg.getData().getString("voice");
+                  Log.d(TAG, "handleMessage:"+voice);
+                  TextView textProject=(TextView)findViewById(R.id.tv_project);
+                  textProject.setText(project_name);
+                  TextView vehNum=(TextView)findViewById(R.id.tv_veh_num);
+                  vehNum.setText(veh_no);
+                  TextView partNum=(TextView)findViewById(R.id.tv_part_num);
+                  partNum.setText(part_no);
+                  TextView stationName=(TextView)findViewById(R.id.tv_station_num);
+                  stationName.setText(station_name);
+                  TextView userId=(TextView)findViewById(R.id.tv_user_id);
+                  userId.setText(user_id);
+                  TextView problem=(TextView)findViewById(R.id.tv_problems);
+                  problem.setText(problems);
+
+              case 2:
+                  name=msg.getData().getString("name");
+                  duty_name=msg.getData().getString("duty_name");
+                  org_name=msg.getData().getString("org_name");
+                  TextView userName=(TextView)findViewById(R.id.tv_user_name);
+                  userName.setText(name);
+                  TextView dutyName=(TextView)findViewById(R.id.tv_duty_name);
+                  dutyName.setText(duty_name);
+                  TextView orgName=(TextView)findViewById(R.id.tv_org_name);
+                  orgName.setText(org_name);
+
+          }
+      }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,15 +105,21 @@ public class IssueCodeActivity extends AppCompatActivity {
         //获取语音留言问题的方法
         getIssueCode();
 
-        //之前设置的跳转到音频文件的点击事件
-        Button play_music=(Button)findViewById(R.id.play_music);
-        play_music.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent=new Intent(IssueCodeActivity.this,PlayAudioTest.class);
-                startActivity(intent);
-            }
-        });
+        Button play=(Button)findViewById(R.id.play_music);
+//        Button pause=(Button)findViewById(R.id.pause);
+        //Button stop=(Button)findViewById(R.id.play_music);
+        play.setOnClickListener(this);
+//        pause.setOnClickListener(this);
+        //stop.setOnClickListener(this);
+        if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            },1);
+        }else {
+            //初始化MediaPlayer
+            initMediaPlayer();
+        }
     }
 
     //调用接口2.10获取语音留言问题详细信息
@@ -82,21 +150,19 @@ public class IssueCodeActivity extends AppCompatActivity {
                     String from_user_id=resMsg.optString("from_user_id");
                     String project_name=resMsg.optString("project_name");
                     String station_name=resMsg.optString("station_name");
-                    //将解析出的数据赋值给控件
-                    TextView textProject=(TextView)findViewById(R.id.tv_project);
-                    textProject.setText(project_name);
-                    TextView vehNum=(TextView)findViewById(R.id.tv_veh_num);
-                    vehNum.setText(veh_no);
-                    TextView partNum=(TextView)findViewById(R.id.tv_part_num);
-                    partNum.setText(part_no);
-                    TextView stationName=(TextView)findViewById(R.id.tv_station_num);
-                    stationName.setText(station_name);
-                    TextView userId=(TextView)findViewById(R.id.tv_user_id);
-                    userId.setText(user_id);
-                    TextView problem=(TextView)findViewById(R.id.tv_problems);
-                    problem.setText(problems);
 
-                    //获取员工基本信息的方法
+                    Message msg=new Message();
+                    msg.what=1;
+                    Bundle bundle=new Bundle();
+                    bundle.putString("project_name",project_name);
+                    bundle.putString("veh_no",veh_no);
+                    bundle.putString("part_no",part_no);
+                    bundle.putString("station_name",station_name);
+                    bundle.putString("user_id",user_id);
+                    bundle.putString("problems",problems);
+                    bundle.putString("voice",voice);
+                    msg.setData(bundle);
+                    handler.sendMessage(msg);
                     getUserId();
                 }catch (Exception e){
                     e.printStackTrace();
@@ -123,18 +189,77 @@ public class IssueCodeActivity extends AppCompatActivity {
                     String name=resMsg.optString("name");
                     String duty_name=resMsg.optString("duty_name");
                     String org_name=resMsg.optString("org_name");
+
+                    Message msg=new Message();
+                    msg.what=2;
+                    Bundle bundle=new Bundle();
+                    bundle.putString("name",name);
+                    bundle.putString("duty_name",duty_name);
+                    bundle.putString("org_name",org_name);
+                    msg.setData(bundle);
+                    handler.sendMessage(msg);
+
                     //将解析出的数据赋值给控件
-                    TextView userName=(TextView)findViewById(R.id.tv_user_name);
-                    userName.setText(name);
-                    TextView dutyName=(TextView)findViewById(R.id.tv_duty_name);
-                    dutyName.setText(duty_name);
-                    TextView orgName=(TextView)findViewById(R.id.tv_org_name);
-                    orgName.setText(org_name);
+
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         });
+    }
+
+    private void initMediaPlayer(){
+        try {
+            mediaPlayer.setDataSource(this, Uri.parse(voice));
+            mediaPlayer.prepare();//让MediaPlayer
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults){
+        switch (requestCode){
+            case 1:
+                if (grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED){
+                    initMediaPlayer();
+                }else {
+                    Toast.makeText(this,"拒绝权限将无法使用程序",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                break;
+            default:
+        }
+    }
+
+    @Override
+    public void onClick(View view){
+        switch (view.getId()){
+            case R.id.play:
+                if (!mediaPlayer.isPlaying()){
+                    mediaPlayer.start();//开始播放
+                }
+                break;
+//            case R.id.stop:
+//                if (mediaPlayer.isPlaying()){
+//                    mediaPlayer.reset();//停止播放
+//                    initMediaPlayer();
+//                }
+//                break;
+            default:
+                break;
+        }
+    }
+
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (mediaPlayer!=null){
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
     }
 
 
