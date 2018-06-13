@@ -52,7 +52,10 @@
         <activity
             android:name=".VideoRecyclerActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity android:name=".VideoListActivity"
+        <activity
+            android:name=".VideoListActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity android:name=".IssueCodeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
     </application>
 

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -17,7 +18,11 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +74,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
         setContentView(R.layout.login_activity);
         setViews();
         bindEvents();
+
+
 
     }
 
@@ -184,6 +191,10 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                     Boolean status=resMsg.optBoolean("status");
                     //判断是否获取员工信息，如果获取则将信息保存
                     if (status!=false) {
+                        //获取登录时的系统时间
+                        long time=System.currentTimeMillis()/1000;
+                        int loginTime=new Long(time).intValue();
+                        Log.d(TAG, "onResponse:"+loginTime);
                         //使用SharedPreference将员工信息保存起来
                         SharedPreferences.Editor editor = getSharedPreferences(ConfigData.SHARE_PREFERENCES_PREFIX, MODE_PRIVATE).edit();
                         editor.putString("user", user);
@@ -194,16 +205,22 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                         editor.putString("engineerName", engineerName);
                         editor.putString("name", name);
                         editor.putBoolean("status", status);
+                        //将获取的时间保存起来
+                        editor.putInt("time",loginTime);
                         editor.apply();
                     }
-                    Intent intent=new Intent(LoginActivity.this,VideoRecyclerActivity.class);
+                    Intent intent=new Intent(LoginActivity.this,IssueCodeActivity.class);
                     startActivity(intent);
+//                    Intent intent=new Intent(LoginActivity.this,VideoRecyclerActivity.class);
+//                    startActivity(intent);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         });
     }
+
+
 
     public void forgetPassword(){
              //TODO 实现具体逻辑
