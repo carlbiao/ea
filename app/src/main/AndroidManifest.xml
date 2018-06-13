@@ -50,8 +50,7 @@
         </activity>
         <activity
             android:name=".VideoRecyclerActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:configChanges="screenSize|keyboardHidden|orientation"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".IssueCodeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
