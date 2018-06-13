@@ -48,7 +48,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".taskDemo.TaskActivity" />
+
         <activity
             android:name=".VideoRecyclerActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />

@@ -60,6 +60,7 @@ public class EngineerApplication extends Application {
         if (user==""){
             Intent intent=new Intent(EngineerApplication.this,LoginActivity.class);
             startActivity(intent);
+            return;
         }
 
         //判断登录时长

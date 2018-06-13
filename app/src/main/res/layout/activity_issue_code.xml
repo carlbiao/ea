@@ -20,7 +20,7 @@
         android:background="#EFF4FA">
 
         <LinearLayout
-            android:layout_width="460dp"
+            android:layout_width="match_parent"
             android:layout_height="255dp"
             android:background="#FFFFFF"
             android:orientation="vertical"
@@ -28,7 +28,7 @@
             android:paddingRight="10dp">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:orientation="horizontal"
                 android:showDividers="middle"
@@ -43,15 +43,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="11dp"
                     android:layout_marginLeft="6dp"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:textColor="#808080"
                     android:text="项目信息"/>
             </LinearLayout>
 
             <View
-                android:layout_width="320dp"
+                android:layout_width="wrap_content"
                 android:layout_height="1px"
                 android:background="#000000"/>
 
@@ -66,15 +66,15 @@
                     android:layout_marginTop="8dp"
                     android:text="所属项目:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_project"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="汽车发动机项目"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="50dp"/>
 
             </LinearLayout>
@@ -90,15 +90,15 @@
                     android:layout_marginTop="8dp"
                     android:text="车辆号:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_veh_num"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="粤A2E124"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="67dp"/>
 
             </LinearLayout>
@@ -114,15 +114,15 @@
                     android:layout_marginTop="8dp"
                     android:text="零件号:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_part_num"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="AE7162B"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="67dp"/>
 
             </LinearLayout>
@@ -138,15 +138,15 @@
                     android:layout_marginTop="8dp"
                     android:text="所属工位:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_station_num"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="早期工程样车开发"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="50dp"/>
 
             </LinearLayout>
@@ -159,33 +159,40 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingTop="13dp"
+                android:weightSum="1">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
                     android:text="问题:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tv_problems"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginLeft="86dp"
+                    android:layout_weight="0.5"
+                    android:maxLength="7"
+                    android:textColor="#808080"
+                    android:textSize="14dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
                     android:text="音频文件"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <Button
                     android:id="@+id/play_music"
                     android:layout_width="50dp"
                     android:layout_height="30dp"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginLeft="15dp"
                     android:text="播放"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:background="@drawable/button_shape4"
                     android:textColor="#FFFFFF"/>
             </LinearLayout>
@@ -194,7 +201,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="230dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="#FFFFFF"
             android:paddingLeft="10dp"
@@ -216,9 +223,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="10dp"
                     android:layout_marginLeft="6dp"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:textColor="#808080"
                     android:text="人员信息"/>
             </LinearLayout>
@@ -239,15 +246,15 @@
                     android:layout_marginTop="8dp"
                     android:text="员工号:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_user_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="KJ134221"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="67dp"/>
 
             </LinearLayout>
@@ -263,15 +270,15 @@
                     android:layout_marginTop="8dp"
                     android:text="姓名:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_user_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="李春兰"
                     android:layout_marginTop="8dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="85dp"/>
 
             </LinearLayout>
@@ -287,34 +294,19 @@
                     android:layout_marginTop="8dp"
                     android:text="职务:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_duty_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="小型车/紧凑型"
                     android:layout_marginTop="8dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="85dp"/>
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="平台认证技术经理"
-                    android:layout_marginTop="8dp"
-                    android:textColor="#333333"
-                    android:textSize="18sp"
-                    android:paddingLeft="125dp"/>
-
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -327,15 +319,15 @@
                     android:layout_marginTop="8dp"
                     android:text="岗位:"
                     android:textColor="#808080"
-                    android:textSize="18sp"/>
+                    android:textSize="14dp"/>
 
                 <TextView
+                    android:id="@+id/tv_org_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="早期工程样车开发"
                     android:layout_marginTop="8dp"
                     android:textColor="#333333"
-                    android:textSize="18sp"
+                    android:textSize="14dp"
                     android:paddingLeft="85dp"/>
 
             </LinearLayout>
