@@ -22,15 +22,21 @@ public class IssueCodeActivity extends AppCompatActivity {
 
     private static final String TAG="IssueCodeActivity";
 
+
     private Button play_music;
     //设置一个用户id，用于获取用户信息接口
     private String user_id;
+
+    //TODO 需要根据上一个Activity传值
+    private String code = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_issue_code);
-
+        Intent intent = getIntent();
+        code = intent.getStringExtra("code");
+        Log.e(TAG,code);
         //设立标题
         new LogoActivity(this).setIb_left(R.drawable.ic_back).setLogoText("远程视频列表");
 
@@ -50,7 +56,8 @@ public class IssueCodeActivity extends AppCompatActivity {
 
     //调用接口2.10获取语音留言问题详细信息
     private void getIssueCode(){
-        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/code/get?code=1002395451112030208", new Callback() {
+
+        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/code/get?code=" + code, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
             }

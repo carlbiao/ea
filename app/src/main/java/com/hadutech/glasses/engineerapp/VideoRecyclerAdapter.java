@@ -10,25 +10,25 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
+public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdapter.ViewHolder> {
 
     private List<RemoteVideo> list;
     private OnItemClickListener onItemClickListener = null;
 
-    public RecyclerAdapter(List<RemoteVideo> list){
+    public VideoRecyclerAdapter(List<RemoteVideo> list){
         this.list = list;
     }
 
     @NonNull
     @Override
-    public RecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public VideoRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.video_recycler_list_item, parent, false);
-        RecyclerAdapter.ViewHolder viewHolder = new RecyclerAdapter.ViewHolder(view);
+        VideoRecyclerAdapter.ViewHolder viewHolder = new VideoRecyclerAdapter.ViewHolder(view);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerAdapter.ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull VideoRecyclerAdapter.ViewHolder holder, final int position) {
         RemoteVideo remoteVideo = list.get(position);
         if (remoteVideo.getType() == RemoteVideo.TYPE_VOICE) {
             holder.answerButton.setVisibility(View.GONE);
@@ -72,12 +72,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             return 0;
         }
         return list.size();
-    }
-
-    @Override
-    public int getItemViewType(int position){
-        list.get(position).getType();
-        return list.get(position).getType();
     }
 
     public void addItem(int index,RemoteVideo s){
