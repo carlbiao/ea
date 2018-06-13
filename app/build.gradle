@@ -36,4 +36,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:latest.integration'
     implementation 'com.squareup.okhttp3:logging-interceptor:latest.integration'
     implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation 'com.dyhdyh.loadingbar:loadingbar:1.4.4'
+
 }

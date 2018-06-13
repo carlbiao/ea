@@ -1,4 +1,4 @@
-package com.hadutech.glasses.engineerapp;
+package com.hadutech.glasses.engineerapp.events;
 
 public class RtcEvent {
 
