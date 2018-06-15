@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -47,7 +48,8 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         recyclerView.setAdapter(adapter);
 
         //在视图中设立的标题
-        new TitleBuilder(this).setTitleText("远程视频列表").setIv_right(R.drawable.ic_me);
+        new TitleBuilder(this).setTitleText("远程视频列表").setIv_right(R.drawable.ic_me).setRightIcoListening(rightReturnListener);
+
 
 
         //2、2.9 获取留言问题记录
@@ -137,14 +139,13 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     }
 
-    //用于时间的刷新
-//    Timer timer=new Timer();
-//    TimerTask task=new TimerTask() {
-//        @Override
-//        public void run() {
-//            Message message=new Message();
-//            message.what=2;
-//            handler.sendMessage(message);
-//        }
-//    };
+    //点击标题栏图片返回到登录界面
+   private View.OnClickListener rightReturnListener=new View.OnClickListener() {
+       @Override
+       public void onClick(View v) {
+           Intent intent=new Intent(VideoRecyclerActivity.this,LoginActivity.class);
+           startActivity(intent);
+           finish();
+       }
+   };
 }

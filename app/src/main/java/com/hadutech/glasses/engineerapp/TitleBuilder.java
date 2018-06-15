@@ -11,7 +11,7 @@ import android.widget.TextView;
 public class TitleBuilder {
 
     private View titleView;
-    private LinearLayout titleBar;
+    private RelativeLayout titleBar;
     private TextView tv_title;
     private ImageView iv_right;
 
@@ -21,7 +21,7 @@ public class TitleBuilder {
     public TitleBuilder(Activity context){
         titleView=context.findViewById(R.id.title_bar);
         tv_title=(TextView)titleView.findViewById(R.id.tv_title);
-        titleBar=(LinearLayout) titleView.findViewById(R.id.title_bar);
+        titleBar=(RelativeLayout) titleView.findViewById(R.id.title_bar);
         iv_right=(ImageView)titleView.findViewById(R.id.iv_right);
 
     }
@@ -42,6 +42,16 @@ public class TitleBuilder {
     public TitleBuilder setIv_right(int resId){
         iv_right.setVisibility(resId>0?View.VISIBLE:View.GONE);
         iv_right.setImageResource(resId);
+        return this;
+    }
+
+    /**
+     * 用于设置标题栏右边图片的点击事件
+     */
+    public TitleBuilder setRightIcoListening(View.OnClickListener listener){
+        if (iv_right.getVisibility() == View.VISIBLE){
+            iv_right.setOnClickListener(listener);
+        }
         return this;
     }
 }

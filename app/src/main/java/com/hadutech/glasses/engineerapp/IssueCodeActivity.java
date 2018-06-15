@@ -3,6 +3,8 @@ package com.hadutech.glasses.engineerapp;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
@@ -28,7 +30,8 @@ import okhttp3.Response;
 
 public class IssueCodeActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private static final String TAG="IssueCodeActivity";
+    private static final String TAG = "IssueCodeActivity";
+    private MediaPlayer mediaPlayer = new MediaPlayer();
 
 
     private Button play_music;
@@ -43,7 +46,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     private String duty_name;
     private String org_name;
     private String voice;
-    private MediaPlayer mediaPlayer=new MediaPlayer();
 
 
 
@@ -51,45 +53,55 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     private String code = "";
 
     private Handler handler=new Handler(){
-      @Override
-      public void handleMessage(Message msg){
-          switch (msg.what){
-              case 1:
-                  project_name=msg.getData().getString("project_name");
-                  Log.d(TAG, "handleMessage:"+project_name);
-                  veh_no=msg.getData().getString("veh_no");
-                  part_no=msg.getData().getString("part_no");
-                  station_name=msg.getData().getString("station_name");
-                  user_id=msg.getData().getString("user_id");
-                  problems=msg.getData().getString("problems");
-                  voice=msg.getData().getString("voice");
-                  Log.d(TAG, "handleMessage:"+voice);
-                  TextView textProject=(TextView)findViewById(R.id.tv_project);
-                  textProject.setText(project_name);
-                  TextView vehNum=(TextView)findViewById(R.id.tv_veh_num);
-                  vehNum.setText(veh_no);
-                  TextView partNum=(TextView)findViewById(R.id.tv_part_num);
-                  partNum.setText(part_no);
-                  TextView stationName=(TextView)findViewById(R.id.tv_station_num);
-                  stationName.setText(station_name);
-                  TextView userId=(TextView)findViewById(R.id.tv_user_id);
-                  userId.setText(user_id);
-                  TextView problem=(TextView)findViewById(R.id.tv_problems);
-                  problem.setText(problems);
-
-              case 2:
-                  name=msg.getData().getString("name");
-                  duty_name=msg.getData().getString("duty_name");
-                  org_name=msg.getData().getString("org_name");
-                  TextView userName=(TextView)findViewById(R.id.tv_user_name);
-                  userName.setText(name);
-                  TextView dutyName=(TextView)findViewById(R.id.tv_duty_name);
-                  dutyName.setText(duty_name);
-                  TextView orgName=(TextView)findViewById(R.id.tv_org_name);
-                  orgName.setText(org_name);
-
-          }
-      }
+        @Override
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case 1:
+                    project_name = msg.getData().getString("project_name");
+                    Log.d(TAG, "handleMessage:"+project_name);
+                    veh_no = msg.getData().getString("veh_no");
+                    part_no = msg.getData().getString("part_no");
+                    station_name = msg.getData().getString("station_name");
+                    user_id = msg.getData().getString("user_id");
+                    problems = msg.getData().getString("problems");
+                    voice = msg.getData().getString("voice");
+                    Log.d(TAG, voice);
+                    //将解析出的数据赋值给控件
+                    TextView textProject = (TextView)findViewById(R.id.tv_project);
+                    textProject.setText(project_name);
+                    TextView vehNum = (TextView)findViewById(R.id.tv_veh_num);
+                    vehNum.setText(veh_no);
+                    TextView partNum = (TextView)findViewById(R.id.tv_part_num);
+                    partNum.setText(part_no);
+                    TextView stationName = (TextView)findViewById(R.id.tv_station_num);
+                    stationName.setText(station_name);
+                    TextView userId = (TextView)findViewById(R.id.tv_user_id);
+                    userId.setText(user_id);
+                    TextView problem = (TextView)findViewById(R.id.tv_problems);
+                    problem.setText(problems);
+                    //播放音频
+                    Button play = (Button)findViewById(R.id.btn_play_music);
+                    play.setOnClickListener(IssueCodeActivity.this);
+                    if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                        ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
+                    }else {
+                        initMediaPlay();//初始化MediaPlayer
+                    }
+                case 2:
+                    name = msg.getData().getString("name");
+                    duty_name = msg.getData().getString("duty_name");
+                    org_name = msg.getData().getString("org_name");
+                    //将解析出的数据赋值给控件
+                    TextView userName = (TextView)findViewById(R.id.tv_user_name);
+                    userName.setText(name);
+                    TextView dutyName = (TextView)findViewById(R.id.tv_duty_name);
+                    dutyName.setText(duty_name);
+                    TextView orgName = (TextView)findViewById(R.id.tv_org_name);
+                    orgName.setText(org_name);
+            }
+        }
     };
 
     @Override
@@ -100,26 +112,9 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         code = intent.getStringExtra("code");
         Log.e(TAG,code);
         //设立标题
-        new LogoActivity(this).setIb_left(R.drawable.ic_back).setLogoText("远程视频列表");
-
+        new LogoActivity(this).setLogoText("远程视频列表");
         //获取语音留言问题的方法
         getIssueCode();
-
-        Button play=(Button)findViewById(R.id.play_music);
-//        Button pause=(Button)findViewById(R.id.pause);
-        //Button stop=(Button)findViewById(R.id.play_music);
-        play.setOnClickListener(this);
-//        pause.setOnClickListener(this);
-        //stop.setOnClickListener(this);
-        if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-            },1);
-        }else {
-            //初始化MediaPlayer
-            initMediaPlayer();
-        }
     }
 
     //调用接口2.10获取语音留言问题详细信息
@@ -132,28 +127,28 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                String issueMsg=response.body().string();
+                String issueMsg = response.body().string();
                 Log.d(TAG, "onResponse:"+issueMsg);
                 try {
                     //解析json
-                    JSONObject issueObj=new JSONObject(issueMsg);
-                    JSONObject resMsg=issueObj.optJSONObject("result");
-                    String code=resMsg.optString("code");
-                    String project_no=resMsg.optString("project_no");
-                    String veh_no=resMsg.optString("veh_no");
-                    String part_no=resMsg.optString("part_no");
-                    String station_no=resMsg.optString("station_no");
-                    String voice=resMsg.optString("voice");
-                    String problems=resMsg.optString("problems");
-                    Boolean read_status=resMsg.optBoolean("read_status");
-                    user_id=resMsg.optString("user_id");
-                    String from_user_id=resMsg.optString("from_user_id");
-                    String project_name=resMsg.optString("project_name");
-                    String station_name=resMsg.optString("station_name");
-
-                    Message msg=new Message();
+                    JSONObject issueObj = new JSONObject(issueMsg);
+                    JSONObject resMsg = issueObj.optJSONObject("result");
+                    String code = resMsg.optString("code");
+                    String project_no = resMsg.optString("project_no");
+                    String veh_no = resMsg.optString("veh_no");
+                    String part_no = resMsg.optString("part_no");
+                    String station_no = resMsg.optString("station_no");
+                    String voice = resMsg.optString("voice");
+                    String problems = resMsg.optString("problems");
+                    Boolean read_status = resMsg.optBoolean("read_status");
+                    user_id = resMsg.optString("user_id");
+                    String from_user_id = resMsg.optString("from_user_id");
+                    String project_name = resMsg.optString("project_name");
+                    String station_name = resMsg.optString("station_name");
+                    //利用handler将数据传出去
+                    Message msg = new Message();
                     msg.what=1;
-                    Bundle bundle=new Bundle();
+                    Bundle bundle = new Bundle();
                     bundle.putString("project_name",project_name);
                     bundle.putString("veh_no",veh_no);
                     bundle.putString("part_no",part_no);
@@ -167,6 +162,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                 }catch (Exception e){
                     e.printStackTrace();
                 }
+                return;
             }
         });
     }
@@ -176,42 +172,38 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/user/userid?user_id="+user_id, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-
             }
-
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                String userMsg=response.body().string();
+                String userMsg = response.body().string();
                 try {
                     //解析json
-                    JSONObject userObj=new JSONObject(userMsg);
-                    JSONObject resMsg=userObj.optJSONObject("result");
-                    String name=resMsg.optString("name");
-                    String duty_name=resMsg.optString("duty_name");
-                    String org_name=resMsg.optString("org_name");
-
-                    Message msg=new Message();
-                    msg.what=2;
-                    Bundle bundle=new Bundle();
+                    JSONObject userObj = new JSONObject(userMsg);
+                    JSONObject resMsg = userObj.optJSONObject("result");
+                    String name = resMsg.optString("name");
+                    String duty_name = resMsg.optString("duty_name");
+                    String org_name = resMsg.optString("org_name");
+                    //利用handler将数据传出去
+                    Message msg = new Message();
+                    msg.what = 2;
+                    Bundle bundle = new Bundle();
                     bundle.putString("name",name);
                     bundle.putString("duty_name",duty_name);
                     bundle.putString("org_name",org_name);
                     msg.setData(bundle);
                     handler.sendMessage(msg);
-
-                    //将解析出的数据赋值给控件
-
                 }catch (Exception e){
                     e.printStackTrace();
                 }
+                return;
             }
         });
     }
-
-    private void initMediaPlayer(){
+    //播放音频的方法
+    private void initMediaPlay(){
         try {
-            mediaPlayer.setDataSource(this, Uri.parse(voice));
-            mediaPlayer.prepare();//让MediaPlayer
+            mediaPlayer.setDataSource(this,Uri.parse(voice));//指定音频文件的路径
+            mediaPlayer.prepare();//让MediaPlayer进入到准备状态
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -221,42 +213,37 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults){
         switch (requestCode){
             case 1:
-                if (grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED){
-                    initMediaPlayer();
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    initMediaPlay();
                 }else {
-                    Toast.makeText(this,"拒绝权限将无法使用程序",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,"拒绝权限将无法使用程序",Toast.LENGTH_SHORT).show();
                     finish();
                 }
                 break;
-            default:
+                default:
         }
     }
 
+    //播放音频的点击事件
     @Override
-    public void onClick(View view){
-        switch (view.getId()){
-            case R.id.play:
+    public void onClick(View v){
+        switch (v.getId()){
+            case R.id.btn_play_music:
                 if (!mediaPlayer.isPlaying()){
                     mediaPlayer.start();//开始播放
+                }else{
+                    mediaPlayer.pause();//暂停播放
                 }
                 break;
-//            case R.id.stop:
-//                if (mediaPlayer.isPlaying()){
-//                    mediaPlayer.reset();//停止播放
-//                    initMediaPlayer();
-//                }
-//                break;
-            default:
-                break;
+                default:
+                    break;
         }
     }
-
 
     @Override
     protected void onDestroy(){
         super.onDestroy();
-        if (mediaPlayer!=null){
+        if (mediaPlayer != null){
             mediaPlayer.stop();
             mediaPlayer.release();
         }
@@ -267,24 +254,4 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private View.OnClickListener leftReturnListener=new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            finish();
-        }
-    };
 }
