@@ -188,7 +188,7 @@
                     android:textSize="14dp"/>
 
                 <Button
-                    android:id="@+id/play_music"
+                    android:id="@+id/btn_play_music"
                     android:layout_width="50dp"
                     android:layout_height="30dp"
                     android:text="播放"
