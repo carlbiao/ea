@@ -57,6 +57,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         public void handleMessage(Message msg){
             switch (msg.what){
                 case 1:
+                    //接收接口传来的数据
                     project_name = msg.getData().getString("project_name");
                     Log.d(TAG, "handleMessage:"+project_name);
                     veh_no = msg.getData().getString("veh_no");
@@ -79,7 +80,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     userId.setText(user_id);
                     TextView problem = (TextView)findViewById(R.id.tv_problems);
                     problem.setText(problems);
-                    //播放音频
+                    //根据解析出的音频地址voice播放音频
                     Button play = (Button)findViewById(R.id.btn_play_music);
                     play.setOnClickListener(IssueCodeActivity.this);
                     if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
@@ -89,6 +90,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     }else {
                         initMediaPlay();//初始化MediaPlayer
                     }
+                    break;
                 case 2:
                     name = msg.getData().getString("name");
                     duty_name = msg.getData().getString("duty_name");
@@ -100,6 +102,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     dutyName.setText(duty_name);
                     TextView orgName = (TextView)findViewById(R.id.tv_org_name);
                     orgName.setText(org_name);
+                    break;
             }
         }
     };
