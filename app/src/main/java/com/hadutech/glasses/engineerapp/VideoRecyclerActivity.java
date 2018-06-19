@@ -1,23 +1,34 @@
 package com.hadutech.glasses.engineerapp;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.hadutech.glasses.engineerapp.events.AppEvent;
+
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -27,16 +38,20 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     private static final String TAG = "VideoRecyclerActivity";
     private static final int MSG_TYPE_VIDEO_LIST = 1;
+    private static final int MSG_TYPE_ANSWER_TIMEOUT = 2;
 
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
     private VideoRecyclerAdapter adapter;
     private List<RemoteVideo> list = null;
+    private MediaPlayer mediaPlayer = null;
+    private Timer answernTimeout = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(TAG,"onCreate");
         setContentView(R.layout.activity_video_recycler);
         //1、UI初始化
         recyclerView = (RecyclerView) findViewById(R.id.rv_video_list);
@@ -54,6 +69,36 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
         //2、2.9 获取留言问题记录
         getGuidanceIssue();
+
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        Log.e(TAG,"onNewIntent");
+
+
+        String name = intent.getStringExtra("name");
+        String personId = intent.getStringExtra("personId");
+        final String remoteSocketId = intent.getStringExtra("remoteSocketId");
+
+        if(!TextUtils.isEmpty(name) && !TextUtils.isEmpty(personId) && !TextUtils.isEmpty(remoteSocketId)){
+            appendCall(personId,name,remoteSocketId,null);
+            //超过指定时间未应答则主动挂断
+            answernTimeout = new Timer();
+
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    Message msg = new Message();
+                    msg.what = MSG_TYPE_ANSWER_TIMEOUT;
+                    msg.obj = remoteSocketId;
+                    handler.sendMessage(msg);
+                }
+            };
+            answernTimeout.schedule(task,ConfigData.ANSWER_TIMEOUT);
+        }
+
+
 
     }
 
@@ -112,7 +157,10 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
                         adapter.addItem(remoteVideo);
                     }
                     break;
-                case 2:
+                case MSG_TYPE_ANSWER_TIMEOUT:
+                    stopAlarm();
+                    RtcClient.getInstance().refuse(String.valueOf(msg.obj));
+                    adapter.removeItemBySocketId(String.valueOf(msg.obj));
                     //update();
                     break;
             }
@@ -123,7 +171,6 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     @Override
     public void onViewItemClick(RemoteVideo item) {
-        Toast.makeText(VideoRecyclerActivity.this, "查看", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(VideoRecyclerActivity.this,IssueCodeActivity.class);
         intent.putExtra("code",item.getId());
         startActivity(intent);
@@ -131,21 +178,79 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     @Override
     public void onAnswerClick(RemoteVideo item) {
-
+        stopAlarm();
+        //打开视频窗口
+        Intent intent = new Intent(VideoRecyclerActivity.this,RTCActivity.class);
+        Bundle bundle = item.toBundle();
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     @Override
     public void onHangupClick(RemoteVideo item) {
+        stopAlarm();
+        RtcClient.getInstance().refuse(item.getRemoteSocketId());
 
+        adapter.removeItemBySocketId(item.getRemoteSocketId());
     }
 
     //点击标题栏图片返回到登录界面
    private View.OnClickListener rightReturnListener=new View.OnClickListener() {
        @Override
        public void onClick(View v) {
-           Intent intent=new Intent(VideoRecyclerActivity.this,LoginActivity.class);
-           startActivity(intent);
+           EventBus.getDefault().post(new AppEvent(AppEvent.EVENT_TYPE_LOGOUT));
            finish();
        }
    };
+
+    private void appendCall(String personId,String name,String streamId,String dateString){
+        RemoteVideo item = new RemoteVideo();
+        item.setId(personId);
+        item.setPersonId(personId);
+        item.setName(name);
+        if(dateString == null){
+            item.setTime((String) DateFormat.format("yyyy-MM-dd HH:mm:ss",new Date()));
+        }else{
+            item.setTime(dateString);
+        }
+        item.setType(RemoteVideo.TYPE_RTC);
+        item.setRemoteSocketId(streamId);
+        adapter.addItem(0,item);
+        recyclerView.scrollToPosition(0);
+        startAlarm();
+    }
+
+    /**
+     * 响铃
+     */
+    private void startAlarm() {
+        //TODO 处理IllegalStateException异常
+        if(mediaPlayer == null){
+            mediaPlayer = MediaPlayer.create(this, getSystemDefultRingtoneUri());
+            mediaPlayer.setLooping(true);
+        }
+        try {
+            mediaPlayer.prepare();
+        } catch (IllegalStateException e) {
+//            e.printStackTrace();
+            Log.e(TAG,"startAlarm IllegalStateException");
+        } catch (IOException e) {
+//            e.printStackTrace();
+        }
+        mediaPlayer.start();
+    }
+
+    private void stopAlarm(){
+        if(mediaPlayer != null && mediaPlayer.isPlaying()){
+            mediaPlayer.stop();
+        }
+        mediaPlayer = null;
+    }
+
+    private Uri getSystemDefultRingtoneUri() {
+        return RingtoneManager.getActualDefaultRingtoneUri(this,
+                RingtoneManager.TYPE_RINGTONE);
+    }
+
+
 }

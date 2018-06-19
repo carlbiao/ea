@@ -33,6 +33,9 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         if (remoteVideo.getType() == RemoteVideo.TYPE_VOICE) {
             holder.answerButton.setVisibility(View.GONE);
             holder.hangupButton.setVisibility(View.GONE);
+            if(!remoteVideo.isStatus()){
+                holder.tvNewMarker.setVisibility(View.VISIBLE);
+            }
             holder.btnCheck.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -84,6 +87,21 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         notifyItemInserted(list.size()-1);
     }
 
+    public void removeItem(int index){
+        list.remove(index);
+        notifyItemRemoved(index);
+    }
+
+    public void removeItemBySocketId(String socketId){
+        for(RemoteVideo video : list){
+            if(socketId.equals(video.getRemoteSocketId())){
+                int index = list.indexOf(video);
+                removeItem(index);
+                return;
+            }
+        }
+    }
+
 
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -92,6 +110,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         Button btnCheck;
         Button answerButton;
         Button hangupButton;
+        TextView tvNewMarker;
 
         ViewHolder(View view) {
             super(view);
@@ -100,6 +119,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
             btnCheck = view.findViewById(R.id.btn_check);
             answerButton = view.findViewById(R.id.btn_video_recycler_answer);
             hangupButton = view.findViewById(R.id.btn_video_recycler_hangup);
+            tvNewMarker = view.findViewById(R.id.tv_new_mark);
         }
     }
 

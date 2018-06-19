@@ -32,6 +32,15 @@
                     android:paddingLeft="5dp"
                     android:textColor="#333333"
                     android:textSize="14dp" />
+                <TextView
+                    android:id="@+id/tv_new_mark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NEW"
+                    android:visibility="gone"
+                    android:textColor="#ffffff"
+                    android:textSize="10dp" android:layout_marginLeft="10dp"
+                    android:background="@drawable/new_rtc_item_shape"/>
 
             </LinearLayout>
             <TextView

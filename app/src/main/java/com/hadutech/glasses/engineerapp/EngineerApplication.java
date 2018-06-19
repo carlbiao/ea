@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.hadutech.glasses.engineerapp.events.AppEvent;
 import com.hadutech.glasses.engineerapp.events.RtcEvent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -39,13 +40,17 @@ public class EngineerApplication extends Application {
                         }
                     }
                 };
-                RtcClient.getInstance().connect(socketHandler,event.getName(),event.getPersonId(),RtcClient.RTC_CLIENT_TYPE_ENGINEER);
+                RtcClient.getInstance().setRtcHandler(socketHandler);
+                RtcClient.getInstance().connect(event.getName(),event.getPersonId(),RtcClient.RTC_CLIENT_TYPE_ENGINEER);
                 break;
             case RtcEvent.EVENT_TYPE_ON_CALL:
                 //启动接听列表Activity
                 Intent intent = new Intent();
-                intent.setAction("my_action");
-                intent.addCategory("my_category");
+                intent.setAction("open_video_action");
+                intent.addCategory("open_video_category");
+                intent.putExtra("name",event.getName());
+                intent.putExtra("personId",event.getPersonId());
+                intent.putExtra("remoteSocketId",event.getRemoteSocketId());
                 startActivity(intent);
                 break;
         }
@@ -53,10 +58,22 @@ public class EngineerApplication extends Application {
 
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void userEventBus(AppEvent event) {
+        switch (event.getType()) {
+            case AppEvent.EVENT_TYPE_LOGOUT:
+                Log.e(TAG,"log out");
+                SharedPreferences.Editor editor = getSharedPreferences(ConfigData.SHARE_PREFERENCES_PREFIX, MODE_PRIVATE).edit();
+                editor.clear();
+                editor.commit();
 
+                //断开rtc
+                RtcClient.getInstance().close();
+                Intent intent = new Intent(EngineerApplication.this,LoginActivity.class);
+                startActivity(intent);
+                break;
+        }
 
-    //获取现在的系统时间
-    private void booleanTime() {
 
     }
 }

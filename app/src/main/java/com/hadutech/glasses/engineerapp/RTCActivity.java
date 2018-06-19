@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -113,20 +114,19 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 MediaStream mediaStream = (MediaStream) msg.obj;
                 VideoRenderer.Callbacks remoteRender = VideoRendererGuiCustom.create(0, 0, 100, 100, VideoRendererGuiCustom.ScalingType.SCALE_ASPECT_FILL, false);
                 mediaStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-                //TODO 挂断以后的处理
             }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_CALL){
-                JSONObject streamJson = (JSONObject) msg.obj;
-                RtcClient.getInstance().startCamera(RTCActivity.this,null,true,1280,720);
-                //启动呼叫列表
-                remoteVideo = new RemoteVideo();
-                try {
-                    remoteVideo.setPersonId(streamJson.getString("personId"));
-                    remoteVideo.setName(streamJson.getString("name"));
-                    remoteVideo.setRemoteSocketId(streamJson.getString("streamId"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                RtcClient.getInstance().startAnswer(remoteVideo);
+//                JSONObject streamJson = (JSONObject) msg.obj;
+//                RtcClient.getInstance().startCamera(RTCActivity.this,null,true,1280,720);
+//                //启动呼叫列表
+//                remoteVideo = new RemoteVideo();
+//                try {
+//                    remoteVideo.setPersonId(streamJson.getString("personId"));
+//                    remoteVideo.setName(streamJson.getString("name"));
+//                    remoteVideo.setRemoteSocketId(streamJson.getString("streamId"));
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                RtcClient.getInstance().startAnswer(remoteVideo);
 
             }
         }
@@ -152,13 +152,9 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
             return;
         }
 
-
-
-
-//        Intent intent = getIntent();
-//        Bundle bd = intent.getExtras();
-//
-//        remoteVideo = RemoteVideo.toRemoteVideo(bd);
+        Intent intent = getIntent();
+        Bundle bd = intent.getExtras();
+        remoteVideo = RemoteVideo.toRemoteVideo(bd);
 
 
 
@@ -166,12 +162,10 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
         bindEvent();
 
-        //TODO 设置工程师名字，增加一个设置handler的方法
-        RtcClient.getInstance().connect(rtcHandler,"彪彪","10001",RtcClient.RTC_CLIENT_TYPE_ENGINEER);
+        RtcClient.getInstance().setRtcHandler(rtcHandler);
         //开始应答工程师端
-        /**RtcClient.getInstance().startCamera(RTCActivity.this,null,true,1280,720);
-        RtcClient.getInstance().connect(rtcHandler, "彪彪","12345678", RtcClient.RTC_CLIENT_TYPE_EMPLOYEE);
-        RtcClient.getInstance().startAnswer(remoteVideo);**/
+        RtcClient.getInstance().startCamera(RTCActivity.this,null,false,true,1280,720);
+        RtcClient.getInstance().startAnswer(remoteVideo);
 
 
 
@@ -318,14 +312,14 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     @Override
     protected void onResume(){
         super.onResume();
-        Log.e(RTCActivity.class.getName(),"onResume");
+        RtcClient.getInstance().onResume();
         isVisible = true;
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        Log.e(RTCActivity.class.getName(),"onPause");
+        RtcClient.getInstance().onPause();
         isVisible = false;
     }
 
@@ -339,6 +333,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     protected void onDestroy(){
         super.onDestroy();
         Log.e(RTCActivity.class.getName(),"onDestroy");
+        RtcClient.getInstance().onDestroy();
         EventBus.getDefault().unregister(this);
     }
 
@@ -415,7 +410,10 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
             //连接失败
             Log.e(TAG,"通话连接失败");
         } else if (newStatus.equals("CLOSED")) {
-            Log.e(TAG,"通话结束");
+            //Log.e(TAG,"通话结束");
+            Toast.makeText(RTCActivity.this,"视频已中断",Toast.LENGTH_SHORT).show();
+            RtcClient.getInstance().hungup();
+            finish();
         } else if (newStatus.equals("CHECKING")) {
             //互相检查媒体信息，说明通话连接握手成功
 
@@ -457,6 +455,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         if(isScreenShots){
             closeScreenshot();
         }else{
+            RtcClient.getInstance().hungup();
             super.onBackPressed();
         }
         // super.onBackPressed();//注释掉这行,back键不退出activity
@@ -467,7 +466,9 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_rtc_hangup:
-                Log.e(TAG,"挂断");
+                //Log.e(TAG,"挂断");
+                RtcClient.getInstance().hungup();
+                finish();
                 break;
             case R.id.btn_rtc_detail:
                 Log.e(TAG,"详情");

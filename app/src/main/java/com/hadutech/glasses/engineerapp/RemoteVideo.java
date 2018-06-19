@@ -28,7 +28,7 @@ public class RemoteVideo {
     private String name;
 
     /**
-     *  状态，0：未读；1：已读
+     *  状态，true：已读，false：未读
      */
     private boolean status;
 

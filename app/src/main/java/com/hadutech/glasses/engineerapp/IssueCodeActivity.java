@@ -49,7 +49,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
 
 
 
-    //TODO 需要根据上一个Activity传值
+    //TODO 需要根据上一个Activity传值，修改问题的读取状态
     private String code = "";
 
     private Handler handler=new Handler(){

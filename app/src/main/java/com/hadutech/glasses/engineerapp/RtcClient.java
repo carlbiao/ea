@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.hadutech.glasses.engineerapp.events.RtcEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
@@ -106,6 +107,11 @@ public class RtcClient {
     private Peer peer = null;
     private boolean socketConnected = false;//socket是否已经连接
 
+    /**
+     * 视频通信中
+     */
+    private boolean onCalling = false;
+
     //private RtcListener rtcListener = null;
     private MediaStream localMediaStream = null;//本地媒体流
     private VideoSource videoSource = null;//本地视频源
@@ -143,11 +149,9 @@ public class RtcClient {
      * @param personId 工程师id
      * @param type     连接类型
      */
-    public void connect(Handler socketHandler, String name, String personId, int type) {
+    public void connect( String name, String personId, int type) {
         //建立socket连接
-        this.rtcHandler = socketHandler;
         if(socketConnected){
-
             return;
         }
         SSLContext sc = null;
@@ -180,12 +184,50 @@ public class RtcClient {
             rtcClient.on("disconnect", messageHandler.serverError);
             rtcClient.on("error", messageHandler.error);
             rtcClient.connect();
+
+
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (KeyManagementException e) {
             e.printStackTrace();
         } catch (URISyntaxException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void setRtcHandler(Handler socketHandler){
+        this.rtcHandler = socketHandler;
+    }
+
+    /**
+     * 关闭所有连接，只能在注销/应用程序销毁时调用
+     */
+    public void close(){
+        if(socketConnected){
+            rtcClient.close();
+            if (this.videoSource != null) {
+                this.videoSource.stop();
+            }
+            if (this.peer != null) {
+                this.peer.pc.close();
+                this.peer.dataChannel.dispose();
+                this.peer = null;
+            }
+        }
+        socketConnected = false;
+    }
+
+    /**
+     * 挂断
+     */
+    public void hungup(){
+        if (this.videoSource != null) {
+            this.videoSource.stop();
+        }
+        if (this.peer != null) {
+            this.peer.pc.close();
+            this.peer.dataChannel.dispose();
+            this.peer = null;
         }
     }
 
@@ -270,11 +312,20 @@ public class RtcClient {
                         localSdpObserver = new LocalPeerSdpObserver(remoteId, peer.pc);
                         peer.pc.createOffer(localSdpObserver, pcConstraints);
                     } else if (messageType.equals("call")) {
+                        data = data.getJSONObject("stream");
                         //收到员工的call
-                        Message message = new Message();
-                        message.what = RTC_MESSAGE_TYPE_CALL;
-                        message.obj = data.get("stream");
-                        rtcHandler.sendMessage(message);
+                        if(onCalling){
+                            sendMessage(String.valueOf(data.get("streamId")),"refuse",null);
+                            return;
+                        }
+                        onCalling = true;
+                        RtcEvent event = new RtcEvent(RtcEvent.EVENT_TYPE_ON_CALL);
+
+                        event.setName(String.valueOf(data.get("name")));
+                        event.setPersonId(String.valueOf(data.get("personId")));
+                        event.setRemoteSocketId(String.valueOf(data.get("streamId")));
+                        EventBus.getDefault().post(event);
+                        //rtcHandler.sendMessage(message);
                         //EventBus.getDefault().post(new RtcEvent());
                     } else if (messageType.equals("offer")) {
                         //收到offer
@@ -399,6 +450,15 @@ public class RtcClient {
         rtcClient.emit("call", jsonObject);
     }
 
+    public void refuse(String remoteSocketId){
+        try {
+            sendMessage(remoteSocketId,"refuse",null);
+            onCalling = false;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     //--------------------处理信令服务器相关逻辑结束-------------------------------------
 
     //--------------------处理RTC相关逻辑-------------------
@@ -419,39 +479,41 @@ public class RtcClient {
 
 
 
-    public void startCamera(Context context, GLSurfaceView localVideoView, boolean initializeAudio, int videoWidth, int videoHeight) {
+    public void startCamera(Context context, GLSurfaceView localVideoView,boolean initializeVideo, boolean initializeAudio, int videoWidth, int videoHeight) {
         if (factory == null) {
             PeerConnectionFactory.initializeAndroidGlobals(context, initializeAudio, true, true,null);
             // PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
             factory = new PeerConnectionFactory();
         }
-        //启动相机
-        String frontFacingCam = VideoCapturerAndroid.getNameOfFrontFacingDevice();//前面的摄像头
-        String backFacingCam = VideoCapturerAndroid.getNameOfBackFacingDevice();//后面的摄像头
-        //TODO 使用前置摄像头，眼镜需要改为使用后端摄像头
-        VideoCapturer videoCapturerAndroid = VideoCapturerAndroid.create(frontFacingCam);
-        MediaConstraints videoConstraints = new MediaConstraints();//使用720p
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth","1280"));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight","720"));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minWidth", "640"));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minHeight","480"));
-        videoSource = factory.createVideoSource(videoCapturerAndroid,videoConstraints);
-        VideoTrack localVideoTrack = factory.createVideoTrack("100", videoSource);
-
-        if (localVideoView != null) {
-            this.localVideoView = localVideoView;
-            VideoRenderer.Callbacks localRender = VideoRendererGui.create(0, 0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true);
-            localVideoTrack.addRenderer(new VideoRenderer(localRender));
-        }
-
-
-        //启动麦克风
-        AudioSource audioSource = factory.createAudioSource(pcConstraints);
-        AudioTrack localAudioTrack = factory.createAudioTrack("101", audioSource);
 
         localMediaStream = factory.createLocalMediaStream("102");
-        localMediaStream.addTrack(localAudioTrack);
-        localMediaStream.addTrack(localVideoTrack);
+
+        if(initializeVideo){
+            //启动相机
+            String frontFacingCam = VideoCapturerAndroid.getNameOfFrontFacingDevice();//前面的摄像头
+            String backFacingCam = VideoCapturerAndroid.getNameOfBackFacingDevice();//后面的摄像头
+            //TODO 使用前置摄像头，眼镜需要改为使用后端摄像头
+            VideoCapturer videoCapturerAndroid = VideoCapturerAndroid.create(frontFacingCam);
+            MediaConstraints videoConstraints = new MediaConstraints();//使用720p
+            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth","1280"));
+            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight","720"));
+            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minWidth", "640"));
+            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minHeight","480"));
+            videoSource = factory.createVideoSource(videoCapturerAndroid,videoConstraints);
+            VideoTrack localVideoTrack = factory.createVideoTrack("100", videoSource);
+            if (localVideoView != null) {
+                this.localVideoView = localVideoView;
+                VideoRenderer.Callbacks localRender = VideoRendererGui.create(0, 0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true);
+                localVideoTrack.addRenderer(new VideoRenderer(localRender));
+            }
+            localMediaStream.addTrack(localVideoTrack);
+        }
+        if(initializeAudio){
+            //启动麦克风
+            AudioSource audioSource = factory.createAudioSource(pcConstraints);
+            AudioTrack localAudioTrack = factory.createAudioTrack("101", audioSource);
+            localMediaStream.addTrack(localAudioTrack);
+        }
     }
 
 
@@ -459,25 +521,23 @@ public class RtcClient {
 
 
     public void onPause(){
-        this.localVideoView.onPause();
-        this.videoSource.stop();
-    }
-
-    protected void onResume() {
-
-        this.localVideoView.onResume();
-        this.videoSource.restart();
-    }
-
-    protected void onDestroy() {
-        if (this.videoSource != null) {
+        if(this.localVideoView != null){
+            this.localVideoView.onPause();
             this.videoSource.stop();
         }
-        if (this.peer != null) {
-            this.peer.pc.close();
-            this.peer.dataChannel.dispose();
-            this.peer = null;
+
+    }
+
+    public void onResume() {
+        if(this.localVideoView != null){
+            this.localVideoView.onResume();
+            this.videoSource.restart();
         }
+
+    }
+
+    public void onDestroy() {
+        hungup();
     }
 
     /**
@@ -501,6 +561,12 @@ public class RtcClient {
             if(state.equals("DISCONNECTED")){
                 state = "CLOSED";
             }
+            if(state.equals("COMPLETED")){
+                onCalling = true;
+            }else if(state.equals("CLOSED")){
+                onCalling = false;
+            }
+
             Message msg = new Message();
             msg.what = RTC_MESSAGE_TYPE_ICECONNECTIONCHANGE;
             msg.obj = state;

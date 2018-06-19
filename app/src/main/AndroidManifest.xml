@@ -38,19 +38,16 @@
             android:screenOrientation="landscape"
             android:taskAffinity="" />
         <activity
-            android:name=".RemoteVideoListActivity"
+            android:name=".VideoRecyclerActivity"
             android:label="远程视频列表"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
-                <action android:name="my_action" />
-
-                <category android:name="my_category" />
+                <action android:name="open_video_action" />
+                <category android:name="open_video_category" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".VideoRecyclerActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".IssueCodeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
