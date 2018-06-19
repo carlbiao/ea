@@ -173,6 +173,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     public void onViewItemClick(RemoteVideo item) {
         Intent intent = new Intent(VideoRecyclerActivity.this,IssueCodeActivity.class);
         intent.putExtra("code",item.getId());
+        intent.putExtra("readStatus",item.isStatus());
         startActivity(intent);
     }
 

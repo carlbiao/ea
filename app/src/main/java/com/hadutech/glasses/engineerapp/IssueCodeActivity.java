@@ -49,7 +49,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
 
 
 
-    //TODO 需要根据上一个Activity传值，修改问题的读取状态
     private String code = "";
 
     private Handler handler=new Handler(){
@@ -113,6 +112,11 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_issue_code);
         Intent intent = getIntent();
         code = intent.getStringExtra("code");
+        boolean readStatus = intent.getBooleanExtra("readStatus",false);
+        if(!readStatus){
+            //TODO 更新状态为已读
+            
+        }
         Log.e(TAG,code);
         //设立标题
         new LogoActivity(this).setLogoText("远程视频列表");
