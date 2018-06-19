@@ -115,7 +115,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         boolean readStatus = intent.getBooleanExtra("readStatus",false);
         if(!readStatus){
             //TODO 更新状态为已读
-            
+
         }
         Log.e(TAG,code);
         //设立标题

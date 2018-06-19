@@ -497,12 +497,12 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 String imageContent = "data:image/png;base64," + screenShotsView.getBase64ImageContent();
                 RtcClient.getInstance().sendImageToPeer(imageContent);
                 screenshotHandler.sendEmptyMessage(0);
+                //TODO 调用http接口保存该条记录，如何拿到code？
+                //HttpUtil
 //                closeScreenshot();
 //                LoadingBar.cancel(parent);
             }
         }).start();
-
-        //Log.e(TAG,);
         //发送图片
 
     }
