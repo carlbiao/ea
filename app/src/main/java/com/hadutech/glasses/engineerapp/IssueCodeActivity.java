@@ -50,6 +50,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
 
 
     private String code = "";
+    private Boolean status;
 
     private Handler handler=new Handler(){
         @Override
@@ -115,6 +116,28 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         boolean readStatus = intent.getBooleanExtra("readStatus",false);
         if(!readStatus){
             //TODO 更新状态为已读
+
+            //调用2.4接口，更新工程师读取留言问题记录状态
+            HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/status/update?code="+code+"&status="+readStatus, new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+
+                }
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String statusMsg = response.body().string();
+                    Log.d(TAG, "++++++"+statusMsg);
+                    try {
+                        //解析json
+                        JSONObject statusObj = new JSONObject(statusMsg);
+                        JSONObject resMsg=statusObj.optJSONObject("result");
+                        status=resMsg.optBoolean("status");
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                }
+            });
 
         }
         Log.e(TAG,code);
@@ -205,6 +228,11 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                 return;
             }
         });
+    }
+
+    //调用2.4接口,更新工程师读取留言问题记录状态
+    private void getIssueUpdate(){
+
     }
     //播放音频的方法
     private void initMediaPlay(){
