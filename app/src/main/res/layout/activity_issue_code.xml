@@ -21,7 +21,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="255dp"
+            android:layout_height="wrap_content"
             android:background="#FFFFFF"
             android:orientation="vertical"
             android:paddingLeft="10dp"
@@ -57,113 +57,112 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="所属项目:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/tv_project"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="50dp"/>
+                    <TextView
+                        android:id="@+id/tv_sub_pro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="所属项目:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tv_vehicle_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_below="@+id/tv_sub_pro"
+                        android:text="车辆号:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_part_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_below="@+id/tv_vehicle_num"
+                        android:text="零件号:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
 
-                <TextView
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_below="@+id/tv_part_number"
+                        android:text="所属工位:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
+
+
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="车辆号:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
+                    android:layout_height="match_parent"
+                    android:paddingLeft="40dp">
 
-                <TextView
-                    android:id="@+id/tv_veh_num"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="67dp"/>
+                    <TextView
+                        android:id="@+id/tv_project"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tv_veh_num"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_project"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_part_num"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_veh_num"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="零件号:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
-
-                <TextView
-                    android:id="@+id/tv_part_num"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="67dp"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="所属工位:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
-
-                <TextView
-                    android:id="@+id/tv_station_num"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="50dp"/>
+                    <TextView
+                        android:id="@+id/tv_station_num"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_part_num"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
+                </RelativeLayout>
 
             </LinearLayout>
 
             <View
-                android:layout_width="320dp"
+                android:layout_width="match_parent"
                 android:layout_height="1px"
                 android:background="#000000"/>
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingTop="13dp"
-                android:weightSum="1">
+                android:paddingTop="10dp">
 
                 <TextView
+                    android:id="@+id/tv_issue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="问题:"
@@ -172,30 +171,36 @@
 
                 <TextView
                     android:id="@+id/tv_problems"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
+                    android:layout_toRightOf="@+id/tv_issue"
                     android:maxLength="7"
                     android:textColor="#808080"
                     android:textSize="14dp"/>
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:id="@+id/tv_music"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.6"
+                    android:layout_toRightOf="@+id/tv_problems"
+                    android:layout_marginLeft="68dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginBottom="10dp"
                     android:text="音频文件"
                     android:textColor="#808080"
                     android:textSize="14dp"/>
 
                 <Button
                     android:id="@+id/btn_play_music"
-                    android:layout_width="50dp"
-                    android:layout_height="30dp"
+                    android:layout_width="40dp"
+                    android:layout_height="20dp"
+                    android:layout_toRightOf="@+id/tv_music"
+                    android:layout_marginBottom="10dp"
                     android:text="播放"
                     android:textSize="14dp"
                     android:background="@drawable/button_shape4"
                     android:textColor="#FFFFFF"/>
-            </LinearLayout>
+            </RelativeLayout>
 
         </LinearLayout>
 
@@ -211,20 +216,19 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:paddingTop="10dp"
                 android:orientation="horizontal"
                 >
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_user_2"
-                    android:layout_marginTop="10dp"/>
+                    android:src="@drawable/ic_user_2" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginLeft="6dp"
+                    android:layout_marginLeft="5dp"
                     android:textSize="14dp"
                     android:textColor="#808080"
                     android:text="人员信息"/>
@@ -237,98 +241,94 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/tv_emp_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="员工号:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
+
+                    <TextView
+                        android:id="@+id/tv_rl_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_emp_num"
+                        android:layout_marginTop="10dp"
+                        android:text="姓名:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
+
+                    <TextView
+                        android:id="@+id/tv_position"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_rl_name"
+                        android:layout_marginTop="10dp"
+                        android:text="职务:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
+
+                    <TextView
+                        android:id="@+id/tv_jobs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_position"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:text="岗位:"
+                        android:textColor="#808080"
+                        android:textSize="14dp"/>
+                </RelativeLayout>
+
+                <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="员工号:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
+                    android:paddingLeft="40dp">
 
-                <TextView
-                    android:id="@+id/tv_user_id"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="67dp"/>
+                    <TextView
+                        android:id="@+id/tv_user_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tv_user_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_user_id"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_duty_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_user_name"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="姓名:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
-
-                <TextView
-                    android:id="@+id/tv_user_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="85dp"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="职务:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
-
-                <TextView
-                    android:id="@+id/tv_duty_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="85dp"/>
-
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="岗位:"
-                    android:textColor="#808080"
-                    android:textSize="14dp"/>
-
-                <TextView
-                    android:id="@+id/tv_org_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textColor="#333333"
-                    android:textSize="14dp"
-                    android:paddingLeft="85dp"/>
+                    <TextView
+                        android:id="@+id/tv_org_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/tv_duty_name"
+                        android:layout_marginTop="10dp"
+                        android:textColor="#333333"
+                        android:textSize="14dp" />
+                </RelativeLayout>
 
             </LinearLayout>
         </LinearLayout>
