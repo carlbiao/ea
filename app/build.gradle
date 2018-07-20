@@ -1,10 +1,18 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'key0'
+            keyPassword 'pwd123456'
+            storeFile file('E:/03_work/source/glasses/engineerApp.jks')
+            storePassword 'pwd123456'
+        }
+    }
     compileSdkVersion 27
     defaultConfig {
         applicationId "glasses.hadutech.com.engineerapp"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -20,7 +28,7 @@ android {
 
 dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
@@ -37,5 +45,4 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:latest.integration'
     implementation 'org.greenrobot:eventbus:3.1.1'
     implementation 'com.dyhdyh.loadingbar:loadingbar:1.4.4'
-
 }

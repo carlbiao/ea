@@ -38,7 +38,7 @@ import org.webrtc.VideoRendererGui;
 public class VideoRendererGuiCustom implements Renderer {
     private static VideoRendererGuiCustom instance = null;
     private static Runnable eglContextReady = null;
-    private static final String TAG = "VideoRendererGui";
+    private static final String TAG = "VideoRendererGuiCustom";
     private GLSurfaceView surface;
     private static EGLContext eglContext = null;
     private boolean onSurfaceCreatedCalled;
@@ -60,6 +60,8 @@ public class VideoRendererGuiCustom implements Renderer {
     }
 
     private boolean shouldTakePic = false;
+    private int startX = 0;
+    private int startY = 0;
 
     private VideoRendererGuiCustom(GLSurfaceView surface) {
         this.surface = surface;
@@ -76,7 +78,9 @@ public class VideoRendererGuiCustom implements Renderer {
         eglContextReady = eglContextReadyCallback;
     }
 
-    public static void takePic(){
+    public static void takePic(int x,int y){
+        instance.startX = x;
+        instance.startY = y;
         instance.setShouldTakePic(true);
     }
 
@@ -270,7 +274,7 @@ public class VideoRendererGuiCustom implements Renderer {
 
                 shouldTakePic = false;
                 ScreenShotEvent event = new ScreenShotEvent();
-                event.setBitmap(createBitmapFromGLSurface(0,0,screenWidth,screenHeight,unused));
+                event.setBitmap(createBitmapFromGLSurface(startX,startY,screenWidth,screenHeight,unused));
                 EventBus.getDefault().post(event);
 
             }
@@ -280,21 +284,21 @@ public class VideoRendererGuiCustom implements Renderer {
 
     }
 
-    //TODO 这个截屏第一次比较慢，没有好的解决办法
     private Bitmap createBitmapFromGLSurface(int x, int y, int w, int h, GL10 gl)
             throws OutOfMemoryError {
-        Long tmp = System.currentTimeMillis();
+
         int bitmapBuffer[] = new int[w * h];
         int bitmapSource[] = new int[w * h];
         IntBuffer intBuffer = IntBuffer.wrap(bitmapBuffer);
         intBuffer.position(0);
-        Log.e(TAG,"Step1:" + String.valueOf(System.currentTimeMillis()-tmp));
-        tmp = System.currentTimeMillis();
 
+        //gl.get
+        Log.e(TAG,"createBitmapFromGLSurface:" + String.valueOf(surface.getWidth()) + "  " + String.valueOf(surface.getHeight()));
+//        surface.getHeight();
+//        surface.getWidth();
         try {
             gl.glReadPixels(x, y, w, h, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, intBuffer);
-            Log.e(TAG,"Step2:" + String.valueOf(System.currentTimeMillis()-tmp));
-            tmp = System.currentTimeMillis();
+
             int offset1, offset2;
             for (int i = 0; i < h; i++) {
                 offset1 = i * w;
@@ -307,8 +311,7 @@ public class VideoRendererGuiCustom implements Renderer {
                     bitmapSource[offset2 + j] = pixel;
                 }
             }
-            Log.e(TAG,"Step3:" + String.valueOf(System.currentTimeMillis()-tmp));
-            tmp = System.currentTimeMillis();
+
         } catch (GLException e) {
             return null;
         }

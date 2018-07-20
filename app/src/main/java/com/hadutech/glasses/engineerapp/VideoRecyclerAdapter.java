@@ -33,6 +33,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
         if (remoteVideo.getType() == RemoteVideo.TYPE_VOICE) {
             holder.answerButton.setVisibility(View.GONE);
             holder.hangupButton.setVisibility(View.GONE);
+            holder.btnCheck.setVisibility(View.VISIBLE);
             if(!remoteVideo.isStatus()){
                 holder.tvNewMarker.setVisibility(View.VISIBLE);
             }
@@ -45,6 +46,8 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
                 }
             });
         } else {
+            holder.answerButton.setVisibility(View.VISIBLE);
+            holder.hangupButton.setVisibility(View.VISIBLE);
             holder.btnCheck.setVisibility(View.GONE);
             holder.answerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -90,6 +93,11 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
     public void removeItem(int index){
         list.remove(index);
         notifyItemRemoved(index);
+    }
+
+    public void updateItem(int index,RemoteVideo item){
+        list.set(index,item);
+        notifyItemChanged(index);
     }
 
     public void removeItemBySocketId(String socketId){

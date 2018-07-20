@@ -114,7 +114,9 @@ public class RtcClient {
 
     //private RtcListener rtcListener = null;
     private MediaStream localMediaStream = null;//本地媒体流
+
     private VideoSource videoSource = null;//本地视频源
+    private AudioSource audioSource = null;//本地音频源
     private Gson gson = new Gson();
 
 
@@ -208,6 +210,9 @@ public class RtcClient {
             if (this.videoSource != null) {
                 this.videoSource.stop();
             }
+//            if(this.audioSource != null){
+//                this.audioSource.;
+//            }
             if (this.peer != null) {
                 this.peer.pc.close();
                 this.peer.dataChannel.dispose();
@@ -222,10 +227,12 @@ public class RtcClient {
      */
     public void hungup(){
         if (this.videoSource != null) {
+
             this.videoSource.stop();
         }
         if (this.peer != null) {
             this.peer.pc.close();
+            //this.peer.pc.dispose();
             this.peer.dataChannel.dispose();
             this.peer = null;
         }
@@ -312,7 +319,7 @@ public class RtcClient {
                         localSdpObserver = new LocalPeerSdpObserver(remoteId, peer.pc);
                         peer.pc.createOffer(localSdpObserver, pcConstraints);
                     } else if (messageType.equals("call")) {
-                        data = data.getJSONObject("stream");
+                        JSONObject streamData = data.getJSONObject("stream");
                         //收到员工的call
                         if(onCalling){
                             sendMessage(String.valueOf(data.get("streamId")),"refuse",null);
@@ -321,9 +328,11 @@ public class RtcClient {
                         onCalling = true;
                         RtcEvent event = new RtcEvent(RtcEvent.EVENT_TYPE_ON_CALL);
 
-                        event.setName(String.valueOf(data.get("name")));
-                        event.setPersonId(String.valueOf(data.get("personId")));
-                        event.setRemoteSocketId(String.valueOf(data.get("streamId")));
+                        event.setName(String.valueOf(streamData.get("name")));
+                        event.setPersonId(String.valueOf(streamData.get("personId")));
+                        event.setRemoteSocketId(String.valueOf(streamData.get("streamId")));
+                        event.setId(String.valueOf(data.get("code")));
+                        //event.setId("2342342553");
                         EventBus.getDefault().post(event);
                         //rtcHandler.sendMessage(message);
                         //EventBus.getDefault().post(new RtcEvent());
@@ -489,6 +498,7 @@ public class RtcClient {
         localMediaStream = factory.createLocalMediaStream("102");
 
         if(initializeVideo){
+
             //启动相机
             String frontFacingCam = VideoCapturerAndroid.getNameOfFrontFacingDevice();//前面的摄像头
             String backFacingCam = VideoCapturerAndroid.getNameOfBackFacingDevice();//后面的摄像头
@@ -510,7 +520,7 @@ public class RtcClient {
         }
         if(initializeAudio){
             //启动麦克风
-            AudioSource audioSource = factory.createAudioSource(pcConstraints);
+            audioSource = factory.createAudioSource(pcConstraints);
             AudioTrack localAudioTrack = factory.createAudioTrack("101", audioSource);
             localMediaStream.addTrack(localAudioTrack);
         }

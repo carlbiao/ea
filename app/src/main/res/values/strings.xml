@@ -3,5 +3,5 @@
     <item name="Tag_Listen" type="id"></item>
     <string name="title_activity_login">Sign in</string>
 
-    <string name="app_name">engineerApp</string>
+    <string name="app_name">眼镜助手</string>
 </resources>

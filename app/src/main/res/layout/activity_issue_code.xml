@@ -150,12 +150,12 @@
 
             </LinearLayout>
 
-            <View
+            <View android:id="@+id/rl_issue_voice_split_line"
                 android:layout_width="match_parent"
                 android:layout_height="1px"
                 android:background="#000000"/>
 
-            <RelativeLayout
+            <RelativeLayout android:id="@+id/rl_issue_voice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -198,7 +198,18 @@
                     android:layout_marginBottom="10dp"
                     android:text="播放"
                     android:textSize="14dp"
-                    android:background="@drawable/button_shape4"
+                    android:background="@drawable/btn_play_music_shape"
+                    android:textColor="#FFFFFF"/>
+                <Button
+                    android:id="@+id/btn_stop_music"
+                    android:layout_width="40dp"
+                    android:layout_height="20dp"
+                    android:layout_toRightOf="@+id/tv_music"
+                    android:layout_marginBottom="10dp"
+                    android:text="停止"
+                    android:visibility="gone"
+                    android:textSize="14dp"
+                    android:background="@drawable/btn_stop_music_shape"
                     android:textColor="#FFFFFF"/>
             </RelativeLayout>
 

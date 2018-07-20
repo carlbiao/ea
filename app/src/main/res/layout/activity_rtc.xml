@@ -11,12 +11,12 @@
         android:id="@+id/glsv_rtc"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></android.opengl.GLSurfaceView>
-    <FrameLayout android:id="@+id/fm_rtc_mask"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#0099bdf4">
+    <!--<FrameLayout android:id="@+id/fm_rtc_mask"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:background="#0099bdf4">-->
 
-    </FrameLayout>
+    <!--</FrameLayout>-->
     <!--视频通话界面-->
     <RelativeLayout android:id="@+id/rl_rtc_calling"
         android:orientation="horizontal"

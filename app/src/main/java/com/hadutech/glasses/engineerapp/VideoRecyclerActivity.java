@@ -1,6 +1,8 @@
 package com.hadutech.glasses.engineerapp;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -46,6 +48,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     private List<RemoteVideo> list = null;
     private MediaPlayer mediaPlayer = null;
     private Timer answernTimeout = null;
+    private AudioManager audiomanage = null;
 
 
     @Override
@@ -80,9 +83,11 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         String name = intent.getStringExtra("name");
         String personId = intent.getStringExtra("personId");
         final String remoteSocketId = intent.getStringExtra("remoteSocketId");
+        String code = intent.getStringExtra("code");
+
 
         if(!TextUtils.isEmpty(name) && !TextUtils.isEmpty(personId) && !TextUtils.isEmpty(remoteSocketId)){
-            appendCall(personId,name,remoteSocketId,null);
+            appendCall(personId,name,remoteSocketId,code,null);
             //超过指定时间未应答则主动挂断
             answernTimeout = new Timer();
 
@@ -120,18 +125,20 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
                     JSONArray jsonArray = issueObj.getJSONArray("result");
                     Log.d(TAG, "+++++++" + jsonArray);
                     List<RemoteVideo> videoList = new ArrayList<>();
-                    for (int i = jsonArray.length() - 1; i > 0; i--) {
+                    for (int i = jsonArray.length() - 1; i >= 0; i--) {
                         JSONObject result = jsonArray.getJSONObject(i);
                         String name = result.optString("name");
                         boolean status = result.optBoolean("status");
                         String code = result.optString("code");
                         String time = result.optString("time");
+                        String empCode = result.optString("empCode");
                         RemoteVideo remoteVideo = new RemoteVideo();
                         remoteVideo.setTime(time);
                         remoteVideo.setName(name);
                         remoteVideo.setStatus(status);
-                        remoteVideo.setPersonId(code);
+                        remoteVideo.setPersonId(empCode);
                         remoteVideo.setId(code);
+                        remoteVideo.setEmpCode(empCode);
                         remoteVideo.setType(RemoteVideo.TYPE_VOICE);
                         videoList.add(remoteVideo);
                     }
@@ -174,17 +181,25 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         Intent intent = new Intent(VideoRecyclerActivity.this,IssueCodeActivity.class);
         intent.putExtra("code",item.getId());
         intent.putExtra("readStatus",item.isStatus());
+        intent.putExtra("detailType","issue");
+
         startActivity(intent);
+        int index = list.indexOf(item);
+        item.setStatus(true);
+        adapter.updateItem(index,item);
     }
 
     @Override
     public void onAnswerClick(RemoteVideo item) {
         stopAlarm();
+        answernTimeout.cancel();
+        answernTimeout = null;
         //打开视频窗口
         Intent intent = new Intent(VideoRecyclerActivity.this,RTCActivity.class);
         Bundle bundle = item.toBundle();
         intent.putExtras(bundle);
         startActivity(intent);
+        adapter.removeItemBySocketId(item.getRemoteSocketId());
     }
 
     @Override
@@ -204,11 +219,12 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
        }
    };
 
-    private void appendCall(String personId,String name,String streamId,String dateString){
+    private void appendCall(String personId,String name,String streamId,String code,String dateString){
         RemoteVideo item = new RemoteVideo();
-        item.setId(personId);
+        //item.setId(personId);
         item.setPersonId(personId);
         item.setName(name);
+        item.setId(code);
         if(dateString == null){
             item.setTime((String) DateFormat.format("yyyy-MM-dd HH:mm:ss",new Date()));
         }else{
@@ -226,6 +242,11 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
      */
     private void startAlarm() {
         //TODO 处理IllegalStateException异常
+        if(audiomanage == null){
+            audiomanage = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        }
+        audiomanage.setSpeakerphoneOn(true);
+        //audiomanage.setSpeakerphoneOn(false);
         if(mediaPlayer == null){
             mediaPlayer = MediaPlayer.create(this, getSystemDefultRingtoneUri());
             mediaPlayer.setLooping(true);

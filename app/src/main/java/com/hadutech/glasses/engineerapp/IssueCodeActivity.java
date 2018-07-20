@@ -31,7 +31,7 @@ import okhttp3.Response;
 public class IssueCodeActivity extends AppCompatActivity implements View.OnClickListener{
 
     private static final String TAG = "IssueCodeActivity";
-    private MediaPlayer mediaPlayer = new MediaPlayer();
+    private MediaPlayer mediaPlayer = null;
 
 
     private Button play_music;
@@ -46,6 +46,9 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     private String duty_name;
     private String org_name;
     private String voice;
+    private Button playButton;
+    private Button stopButton;
+    private String detailType = "";
 
 
 
@@ -66,7 +69,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     user_id = msg.getData().getString("user_id");
                     problems = msg.getData().getString("problems");
                     voice = msg.getData().getString("voice");
-                    Log.d(TAG, voice);
                     //将解析出的数据赋值给控件
                     TextView textProject = (TextView)findViewById(R.id.tv_project);
                     textProject.setText(project_name);
@@ -80,16 +82,9 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     userId.setText(user_id);
                     TextView problem = (TextView)findViewById(R.id.tv_problems);
                     problem.setText(problems);
-                    //根据解析出的音频地址voice播放音频
-                    Button play = (Button)findViewById(R.id.btn_play_music);
-                    play.setOnClickListener(IssueCodeActivity.this);
-                    if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                        ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
-                    }else {
-                        initMediaPlay();//初始化MediaPlayer
-                    }
+
+
+
                     break;
                 case 2:
                     name = msg.getData().getString("name");
@@ -114,11 +109,23 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         Intent intent = getIntent();
         code = intent.getStringExtra("code");
         boolean readStatus = intent.getBooleanExtra("readStatus",false);
-        if(!readStatus){
-            //TODO 更新状态为已读
+        detailType = intent.getStringExtra("detailType");
+        if(detailType.equals("issue") == false){
+            findViewById(R.id.rl_issue_voice).setVisibility(View.GONE);
+            findViewById(R.id.rl_issue_voice_split_line).setVisibility(View.GONE);
+
+        }
+
+        playButton = (Button)findViewById(R.id.btn_play_music);
+        playButton.setOnClickListener(this);
+
+        stopButton = (Button)findViewById(R.id.btn_stop_music);
+        stopButton.setOnClickListener(this);
+
+        if(readStatus == false){
 
             //调用2.4接口，更新工程师读取留言问题记录状态
-            HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/status/update?code="+code+"&status="+readStatus, new Callback() {
+            HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/status/update?code="+code+"&status=true", new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
 
@@ -126,7 +133,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String statusMsg = response.body().string();
-                    Log.d(TAG, "++++++"+statusMsg);
                     try {
                         //解析json
                         JSONObject statusObj = new JSONObject(statusMsg);
@@ -140,61 +146,107 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
             });
 
         }
-        Log.e(TAG,code);
         //设立标题
-        new LogoActivity(this).setLogoText("远程视频列表");
+        new LogoActivity(this).setLogoText("详情");
         //获取语音留言问题的方法
         getIssueCode();
     }
 
     //调用接口2.10获取语音留言问题详细信息
     private void getIssueCode(){
-
-        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/code/get?code=" + code, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String issueMsg = response.body().string();
-                Log.d(TAG, "onResponse:"+issueMsg);
-                try {
-                    //解析json
-                    JSONObject issueObj = new JSONObject(issueMsg);
-                    JSONObject resMsg = issueObj.optJSONObject("result");
-                    String code = resMsg.optString("code");
-                    String project_no = resMsg.optString("project_no");
-                    String veh_no = resMsg.optString("veh_no");
-                    String part_no = resMsg.optString("part_no");
-                    String station_no = resMsg.optString("station_no");
-                    String voice = resMsg.optString("voice");
-                    String problems = resMsg.optString("problems");
-                    Boolean read_status = resMsg.optBoolean("read_status");
-                    user_id = resMsg.optString("user_id");
-                    String from_user_id = resMsg.optString("from_user_id");
-                    String project_name = resMsg.optString("project_name");
-                    String station_name = resMsg.optString("station_name");
-                    //利用handler将数据传出去
-                    Message msg = new Message();
-                    msg.what=1;
-                    Bundle bundle = new Bundle();
-                    bundle.putString("project_name",project_name);
-                    bundle.putString("veh_no",veh_no);
-                    bundle.putString("part_no",part_no);
-                    bundle.putString("station_name",station_name);
-                    bundle.putString("user_id",user_id);
-                    bundle.putString("problems",problems);
-                    bundle.putString("voice",voice);
-                    msg.setData(bundle);
-                    handler.sendMessage(msg);
-                    getUserId();
-                }catch (Exception e){
-                    e.printStackTrace();
+        if(detailType.equals("issue")){
+            HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/code/get?code=" + code, new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
                 }
-                return;
-            }
-        });
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String issueMsg = response.body().string();
+                    Log.d(TAG, "onResponse:"+issueMsg);
+                    try {
+                        //解析json
+                        JSONObject issueObj = new JSONObject(issueMsg);
+                        JSONObject resMsg = issueObj.optJSONObject("result");
+                        String code = resMsg.optString("code");
+                        String project_no = resMsg.optString("project_no");
+                        String veh_no = resMsg.optString("veh_no");
+                        String part_no = resMsg.optString("part_no");
+                        String station_no = resMsg.optString("station_no");
+                        String voice = resMsg.optString("voice");
+                        String problems = resMsg.optString("problems");
+                        Boolean read_status = resMsg.optBoolean("read_status");
+                        user_id = resMsg.optString("user_id");
+                        String from_user_id = resMsg.optString("from_user_id");
+                        String project_name = resMsg.optString("project_name");
+                        String station_name = resMsg.optString("station_name");
+                        //利用handler将数据传出去
+                        Message msg = new Message();
+                        msg.what=1;
+                        Bundle bundle = new Bundle();
+                        bundle.putString("project_name",project_name);
+                        bundle.putString("veh_no",veh_no);
+                        bundle.putString("part_no",part_no);
+                        bundle.putString("station_name",station_name);
+                        bundle.putString("user_id",user_id);
+                        bundle.putString("problems",problems);
+                        bundle.putString("voice",voice);
+                        msg.setData(bundle);
+                        handler.sendMessage(msg);
+                        getUserId();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }else{
+            HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/im/code/get?code=" + code, new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String issueMsg = response.body().string();
+                    Log.d(TAG, "onResponse:"+issueMsg);
+                    try {
+                        //解析json
+                        JSONObject issueObj = new JSONObject(issueMsg);
+                        JSONObject resMsg = issueObj.optJSONObject("result");
+                        resMsg = resMsg.optJSONObject("data");
+                        String code = resMsg.optString("code");
+                        String project_no = resMsg.optString("project_no");
+                        String veh_no = resMsg.optString("vehNo");
+                        String part_no = resMsg.optString("partNo");
+                        String station_no = resMsg.optString("station_no");
+                        //String voice = resMsg.optString("voice");
+                        //String problems = resMsg.optString("problems");
+
+                        user_id = resMsg.optString("fromUserId");
+                        String project_name = resMsg.optString("projectName");
+                        String station_name = resMsg.optString("stationName");
+                        //利用handler将数据传出去
+                        Message msg = new Message();
+                        msg.what=1;
+                        Bundle bundle = new Bundle();
+                        bundle.putString("project_name",project_name);
+                        bundle.putString("veh_no",veh_no);
+                        bundle.putString("part_no",part_no);
+                        bundle.putString("station_name",station_name);
+                        bundle.putString("fromUserId",user_id);
+                        bundle.putString("problems",problems);
+                        bundle.putString("voice",voice);
+                        msg.setData(bundle);
+                        handler.sendMessage(msg);
+                        getUserId();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+
     }
 
     //调用接口1.5获取员工基本信息
@@ -264,11 +316,32 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v){
         switch (v.getId()){
             case R.id.btn_play_music:
-                if (!mediaPlayer.isPlaying()){
-                    mediaPlayer.start();//开始播放
-                }else{
-                    mediaPlayer.pause();//暂停播放
+//                if (!mediaPlayer.isPlaying()){
+//                    mediaPlayer.start();//开始播放
+//                }else{
+//                    mediaPlayer.pause();//暂停播放
+//                }
+//
+//                long startTime = System.currentTimeMillis();
+
+                playButton.setVisibility(View.GONE);
+                stopButton.setVisibility(View.VISIBLE);
+
+                if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
+                }else {
+                    mediaPlayer = new MediaPlayer();
+                    initMediaPlay();//初始化MediaPlayer
                 }
+                mediaPlayer.start();
+                break;
+            case R.id.btn_stop_music:
+                mediaPlayer.stop();
+                mediaPlayer = null;
+                playButton.setVisibility(View.VISIBLE);
+                stopButton.setVisibility(View.GONE);
                 break;
                 default:
                     break;

@@ -100,6 +100,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_login:
+                name = "";
+                password = "";
                 login();
                 break;
             case R.id.btn_forget_password:
@@ -156,6 +158,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                         Message msg=new Message();
                         msg.what=3;
                         handler.sendMessage(msg);
+                        name = "";
+                        password = "";
                         return;
                     }
 

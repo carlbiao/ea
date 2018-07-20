@@ -51,6 +51,7 @@ public class EngineerApplication extends Application {
                 intent.putExtra("name",event.getName());
                 intent.putExtra("personId",event.getPersonId());
                 intent.putExtra("remoteSocketId",event.getRemoteSocketId());
+                intent.putExtra("code",event.getId());
                 startActivity(intent);
                 break;
         }

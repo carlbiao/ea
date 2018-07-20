@@ -8,12 +8,18 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.media.AudioManager;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.opengl.GLSurfaceView;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
@@ -44,12 +50,21 @@ import org.webrtc.VideoRenderer;
 
 import com.hadutech.glasses.engineerapp.events.ScreenShotEvent;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
+
 
 public class RTCActivity extends Activity implements View.OnClickListener,View.OnTouchListener {
     boolean isVisible = false;
     private static final String TAG = "RTCActivity";
     private static final int SEEKBAR_VOLUME_MIN = 1;
     private static final int SEEKBAR_ZOOM_MIN = 1;
+    private static final int MY_PERMISSION_REQUEST_CODE = 10000;
 
     private RemoteVideo remoteVideo = null;
     private GLSurfaceView remoteVideoView = null;
@@ -58,7 +73,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     private SeekBar volumeSeekBar = null;
     private SeekBar zoomSeekbar = null;
     private Boolean isScreenShots = false;
-    private FrameLayout maskLayout = null;
+//    private FrameLayout maskLayout = null;
     private ScreenShotsView screenShotsView = null;
     private RelativeLayout screenShotsContainer = null;
     private Boolean isZoom = false;
@@ -67,6 +82,8 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     private FrameLayout parent = null;
     private int actionDownStartX;
     private int actionDownStartY;
+    private MediaStream remoteMediaStream;
+    private MediaProjectionManager mMediaProjectionManager = null;
     private Handler screenshotHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -102,32 +119,19 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 String messageType = msgJson.get("type").getAsString();
                 String message = msgJson.get("content").getAsString();
                 if(messageType.equals("base64")){
-                    //TODO 收到图片的Base64字符串，请处理到图片控件上
-                    //收到图片
+
                     Log.e(TAG,message);
                 }else{
                     //收到文本信息
                     Log.e(TAG,message);
                 }
             }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_RECEIVE_REMOTE_VIDEO){
-                maskLayout.setVisibility(View.GONE);
-                MediaStream mediaStream = (MediaStream) msg.obj;
-                VideoRenderer.Callbacks remoteRender = VideoRendererGuiCustom.create(0, 0, 100, 100, VideoRendererGuiCustom.ScalingType.SCALE_ASPECT_FILL, false);
-                mediaStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-            }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_CALL){
-//                JSONObject streamJson = (JSONObject) msg.obj;
-//                RtcClient.getInstance().startCamera(RTCActivity.this,null,true,1280,720);
-//                //启动呼叫列表
-//                remoteVideo = new RemoteVideo();
-//                try {
-//                    remoteVideo.setPersonId(streamJson.getString("personId"));
-//                    remoteVideo.setName(streamJson.getString("name"));
-//                    remoteVideo.setRemoteSocketId(streamJson.getString("streamId"));
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//                RtcClient.getInstance().startAnswer(remoteVideo);
+//                maskLayout.setVisibility(View.GONE);
+                remoteMediaStream = (MediaStream) msg.obj;
 
+                VideoRenderer.Callbacks remoteRender = VideoRendererGuiCustom.create(0, 0, 100, 100, VideoRendererGuiCustom.ScalingType.SCALE_ASPECT_FILL, false);
+                remoteMediaStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
+            }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_CALL){
             }
         }
     };
@@ -142,36 +146,84 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         //显示屏常亮
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_rtc);
-
+        initView();
+        EventBus.getDefault().register(this);
         //检查权限
         if(!checkPermissions()){
-            new AlertDialog.Builder(this)
-                    .setTitle("权限不够")
-                    .setMessage("请检查网络、摄像头和麦克风权限！")
-                    .create().show();
+//            new AlertDialog.Builder(this)
+//                    .setTitle("权限不够")
+//                    .setMessage("请检查网络、摄像头和麦克风权限！")
+//                    .create().show();
+            ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
             return;
         }
+
 
         Intent intent = getIntent();
         Bundle bd = intent.getExtras();
         remoteVideo = RemoteVideo.toRemoteVideo(bd);
 
 
-
-        initView();
-
         bindEvent();
-
         RtcClient.getInstance().setRtcHandler(rtcHandler);
         //开始应答工程师端
         RtcClient.getInstance().startCamera(RTCActivity.this,null,false,true,1280,720);
         RtcClient.getInstance().startAnswer(remoteVideo);
 
 
+    }
+
+   // private ScreenRecorder mRecorder = null;
+
+    //录屏核心代码
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        /**MediaProjection mediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, data);
+        if (mediaProjection == null) {
+            Log.e("@@", "media projection is null");
+            return;
+        }
+        // video size
+        final int width = 1280;
+        final int height = 720;
+        File file = new File(Environment.getExternalStorageDirectory(),
+                "record-" + width + "x" + height + "-" + System.currentTimeMillis() + ".mp4");
+        final int bitrate = 6000000;
+        mRecorder = new ScreenRecorder(width, height, bitrate, 1, mediaProjection, file.getAbsolutePath());
+        mRecorder.start();
+        mButton.setText("Stop Recorder");
+        Toast.makeText(this, "Screen recorder is running...", Toast.LENGTH_SHORT).show();
+        moveTaskToBack(true);**/
+    }
+
+    /**
+     * 申请权限结果返回处理
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == MY_PERMISSION_REQUEST_CODE) {
+            //检查权限
+            if(!checkPermissions()){
+//            new AlertDialog.Builder(this)
+//                    .setTitle("权限不够")
+//                    .setMessage("请检查网络、摄像头和麦克风权限！")
+//                    .create().show();
+                ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
+                return;
+            }
+            Intent intent = getIntent();
+            Bundle bd = intent.getExtras();
+            remoteVideo = RemoteVideo.toRemoteVideo(bd);
 
 
-        //setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        EventBus.getDefault().register(this);
+            bindEvent();
+            RtcClient.getInstance().setRtcHandler(rtcHandler);
+            //开始应答工程师端
+            RtcClient.getInstance().startCamera(RTCActivity.this,null,false,true,1280,720);
+            RtcClient.getInstance().startAnswer(remoteVideo);
+        }
     }
 
     /**
@@ -186,7 +238,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         zoomSeekbar = findViewById(R.id.sb_rtc_zoom);
         remoteVideoView = (GLSurfaceView) findViewById(R.id.glsv_rtc);
         VideoRendererGuiCustom.setView(remoteVideoView, null);
-        maskLayout = findViewById(R.id.fm_rtc_mask);
+//        maskLayout = findViewById(R.id.fm_rtc_mask);
         screenShotsView = findViewById(R.id.ssv_rtc_screenshots);
         screenShotsContainer = findViewById(R.id.rl_rtc_imagecut);
 
@@ -326,14 +378,19 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     @Override
     protected void onStop(){
         super.onStop();
-        Log.e(RTCActivity.class.getName(),"onStop");
+        Log.e(TAG,"onStop");
     }
 
     @Override
     protected void onDestroy(){
         super.onDestroy();
-        Log.e(RTCActivity.class.getName(),"onDestroy");
-        RtcClient.getInstance().onDestroy();
+        Log.e(TAG,"onDestroy");
+        //RtcClient.getInstance().onDestroy();
+        if(remoteMediaStream != null){
+            remoteMediaStream.removeTrack(remoteMediaStream.audioTracks.get(0));
+            remoteMediaStream.removeTrack(remoteMediaStream.videoTracks.get(0));
+        }
+
         EventBus.getDefault().unregister(this);
     }
 
@@ -404,7 +461,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     }
 
     public void onIceStatusChanged(String newStatus) {
-        if (newStatus.equals("COMPLETED")) {
+        if (newStatus.equals("CONNECTED")) {
             Log.e(TAG,"通话连接成功");
         } else if (newStatus.equals("FAILED")) {
             //连接失败
@@ -423,8 +480,19 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
     private void startScreenShort(){
         showLoading(ExLoadingFactory.TYPE_SCREEN_SHOT);
-        VideoRendererGuiCustom.takePic();
-
+        //Log.e(TAG,"top:" + remoteVideoView.getTop() + "   left:" + remoteVideoView.getLeft());
+//        ;
+        int[] location = new int[2];
+        int[] location2 = new int[2];
+        remoteVideoView.getLocationOnScreen(location);
+        remoteVideoView.getLocationInWindow(location2);
+        Rect rect = new Rect();
+        remoteVideoView.getLocalVisibleRect(rect);
+        //VideoRendererGuiCustom.takePic(rect.left,rect.top*(-1));
+        //TODO 需要解决缩放以后的截图问题
+        VideoRendererGuiCustom.takePic(0,0);
+        //VideoRendererGuiCustom.takePic(rect.left,remoteVideoView.getHeight() - rect.bottom);
+        //Log.e(TAG,"isisj");
 
     }
 
@@ -471,7 +539,13 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 finish();
                 break;
             case R.id.btn_rtc_detail:
-                Log.e(TAG,"详情");
+                //Log.e(TAG,"详情");
+                Log.e(TAG,"详情：" + remoteVideo.getId());
+                Intent intent = new Intent(RTCActivity.this,IssueCodeActivity.class);
+                intent.putExtra("code",remoteVideo.getId());
+                intent.putExtra("detailType","calling");
+                intent.putExtra("readStatus",true);
+                startActivity(intent);
                 break;
             case R.id.img_rtc_screenshorts:
                 Log.e(TAG,"截图");
@@ -490,21 +564,49 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     /**
      * 发送图片
      */
-    private void sendImage(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String imageContent = "data:image/png;base64," + screenShotsView.getBase64ImageContent();
-                RtcClient.getInstance().sendImageToPeer(imageContent);
-                screenshotHandler.sendEmptyMessage(0);
-                //TODO 调用http接口保存该条记录，如何拿到code？
-                //HttpUtil
-//                closeScreenshot();
-//                LoadingBar.cancel(parent);
-            }
-        }).start();
-        //发送图片
+    private void sendImage() {
+        new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        String imageContent = "data:image/png;base64," + screenShotsView.getBase64ImageContent();
+                        RtcClient.getInstance().sendImageToPeer(imageContent);
+                        screenshotHandler.sendEmptyMessage(0);
+                        //TODO 调用http接口保存该条记录，目前接口提示文件过大
+                        HashMap<String, Object> params = new HashMap<>();
+                        params.put("ref_code", remoteVideo.getId());
+                        params.put("message", imageContent);
+                        params.put("message_type", 2);
+                        HttpUtil.doPost(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/im/save",params,new Callback() {
 
+
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                Log.e(TAG,"invoke 2.12 远程指导即时通信发送消息失败");
+
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                String statusMsg = response.body().string();
+                                try {
+                                    //解析json
+                                    JSONObject statusObj = new JSONObject(statusMsg);
+                                    JSONObject resMsg=statusObj.optJSONObject("result");
+                                    boolean status=resMsg.optBoolean("status");
+                                    if((Boolean) statusObj.get("ret") && (Boolean) resMsg.get("status")){
+                                        Log.e(TAG,"save image message ok!");
+                                    }
+                                    else{
+                                        Log.e(TAG,resMsg.getString("msg"));
+                                    }
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                }).start();
     }
 
 

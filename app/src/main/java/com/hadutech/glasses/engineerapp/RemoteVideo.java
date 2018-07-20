@@ -52,6 +52,16 @@ public class RemoteVideo {
      */
     private String personId;
 
+    public String getEmpCode() {
+        return empCode;
+    }
+
+    public void setEmpCode(String empCode) {
+        this.empCode = empCode;
+    }
+
+    private String empCode;
+
     public String getPersonId() {
         return personId;
     }
