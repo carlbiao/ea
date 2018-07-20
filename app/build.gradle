@@ -9,11 +9,11 @@ android {
             storePassword 'pwd123456'
         }
     }
-    compileSdkVersion 27
+    compileSdkVersion 26
     defaultConfig {
         applicationId "glasses.hadutech.com.engineerapp"
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
