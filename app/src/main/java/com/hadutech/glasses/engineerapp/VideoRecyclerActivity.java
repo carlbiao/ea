@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.hadutech.glasses.engineerapp.events.AppEvent;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -133,7 +134,8 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     //调用问题留言的接口
     private void getGuidanceIssue() {
         Log.e(TAG,"getGuidanceIssue");
-        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=2018-06-07 23:59:59", new Callback() {
+        String endDateStr = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 00:00:00";
+        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=" + endDateStr, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
 

@@ -156,6 +156,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 //                    .setMessage("请检查网络、摄像头和麦克风权限！")
 //                    .create().show();
             ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
+            Log.w(RTCActivity.class.getName(), "没有获取到相关权限！！！");
             return;
         }
 
@@ -212,6 +213,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 //                    .setMessage("请检查网络、摄像头和麦克风权限！")
 //                    .create().show();
                 ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
+                Log.w(RTCActivity.class.getName(), "没有获取到相关权限！！！");
                 return;
             }
             Intent intent = getIntent();
@@ -452,8 +454,10 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWiFiNetworkInfo = mConnectivityManager
                 .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (mWiFiNetworkInfo != null) {
-            available = mWiFiNetworkInfo.isAvailable();
+
+        NetworkInfo mobileNetworkInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if (mobileNetworkInfo != null || mWiFiNetworkInfo != null) {
+            available = (mobileNetworkInfo.isAvailable() || mWiFiNetworkInfo.isAvailable());
         }
         if(available){
             wifiStatusView.setBackgroundResource(R.drawable.rtc_status_tv_ok);
