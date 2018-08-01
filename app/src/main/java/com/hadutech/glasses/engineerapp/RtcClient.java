@@ -331,7 +331,13 @@ public class RtcClient {
                         event.setName(String.valueOf(streamData.get("name")));
                         event.setPersonId(String.valueOf(streamData.get("personId")));
                         event.setRemoteSocketId(String.valueOf(streamData.get("streamId")));
-                        event.setId(String.valueOf(data.get("code")));
+                        String code = "";
+
+                        if(data.has("code")){
+                            code = String.valueOf(data.get("code"));
+                        }
+
+                        event.setId(code);
                         //event.setId("2342342553");
                         EventBus.getDefault().post(event);
                         //rtcHandler.sendMessage(message);

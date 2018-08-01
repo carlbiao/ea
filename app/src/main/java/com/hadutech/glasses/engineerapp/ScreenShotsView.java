@@ -18,6 +18,8 @@ import java.util.ArrayList;
 public class ScreenShotsView extends View {
     private static final String TAG = "ScreenShotsView";
 
+
+
     public Bitmap getBitmap() {
         return bitmap;
     }
@@ -31,6 +33,12 @@ public class ScreenShotsView extends View {
 
     private float startX = 0;
     private float startY = 0;
+
+    public void setDraw(boolean draw) {
+        isDraw = draw;
+    }
+
+    private boolean isDraw = false;
 
     /**
      * 用来保存绘制的路径
@@ -84,6 +92,9 @@ public class ScreenShotsView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if(!isDraw){
+            return true;
+        }
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:

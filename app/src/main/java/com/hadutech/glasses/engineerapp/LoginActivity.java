@@ -42,6 +42,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     private EditText passwordInputText;
     private Button loginButton;
     private Button forgetPwdButton = null;
+    private View cleanView = null;
 
     //定义调用接口返回的信息
     String codeMsg = null;
@@ -84,7 +85,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     private void bindEvents(){
         loginButton.setOnClickListener(this);
         forgetPwdButton.setOnClickListener(this);
-
+        cleanView.setOnClickListener(this);
     }
 
 
@@ -93,6 +94,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
         passwordInputText=(EditText)findViewById(R.id.password);
         loginButton=(Button)findViewById(R.id.btn_login);
         forgetPwdButton = findViewById(R.id.btn_forget_password);
+        cleanView = findViewById(R.id.v_login_clear);
     }
 
 
@@ -105,6 +107,12 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                 login();
                 break;
             case R.id.btn_forget_password:
+                break;
+            case R.id.v_login_clear:
+                name = "";
+                password = "";
+                nameInputText.setText("");
+                passwordInputText.setText("");
                 break;
         }
     }

@@ -44,20 +44,31 @@
                 android:layout_height="0dp" />
 
 
-            <EditText
-                android:id="@+id/name"
+
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_marginTop="40dp"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:textSize="15dp"
-                android:hint="请输入您的工号"
-                android:drawableLeft="@drawable/ic_identity_normal"
-                android:drawableRight="@drawable/ic_clear_normal"
-                android:background="@drawable/all_edittext"/>
+                android:layout_marginTop="40dp">
+                <EditText
+                    android:id="@+id/name"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:maxLines="1"
+                    android:textSize="15dp"
+                    android:hint="请输入您的工号"
+                    android:drawableLeft="@drawable/ic_identity_normal"
+                    android:background="@drawable/all_edittext"/>
+                <View android:id="@+id/v_login_clear"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginRight="20dp"
+                    android:background="@drawable/ic_clear_normal"
+                    android:layout_alignParentRight="true" android:layout_centerVertical="true"></View>
+            </RelativeLayout>
 
             <EditText
                 android:id="@+id/password"

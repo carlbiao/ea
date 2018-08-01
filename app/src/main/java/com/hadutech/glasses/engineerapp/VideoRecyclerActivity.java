@@ -41,6 +41,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     private static final String TAG = "VideoRecyclerActivity";
     private static final int MSG_TYPE_VIDEO_LIST = 1;
     private static final int MSG_TYPE_ANSWER_TIMEOUT = 2;
+    private static final int  MSG_TYPE_REQUEST_VIDEO_LIST = 3;
 
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
@@ -49,6 +50,9 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     private MediaPlayer mediaPlayer = null;
     private Timer answernTimeout = null;
     private AudioManager audiomanage = null;
+    private Timer timer = null;
+    TimerTask timerTask = null;
+
 
 
     @Override
@@ -72,7 +76,26 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
         //2、2.9 获取留言问题记录
         getGuidanceIssue();
+        startRequestLoop();
+    }
 
+    private void startRequestLoop(){
+        timer = new Timer();
+        timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                message.what = MSG_TYPE_REQUEST_VIDEO_LIST;
+                handler.sendMessage(message);
+            }
+        };
+        timer.schedule(timerTask,3000,3000);
+    }
+
+    private void stopRequestLoop(){
+        timerTask.cancel();
+        timer = null;
+        timerTask = null;
     }
 
     @Override
@@ -109,6 +132,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     //调用问题留言的接口
     private void getGuidanceIssue() {
+        Log.e(TAG,"getGuidanceIssue");
         HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=2018-06-07 23:59:59", new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -159,16 +183,23 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_TYPE_VIDEO_LIST:
-                    List<RemoteVideo> list = (List<RemoteVideo>) msg.obj;
-                    for (RemoteVideo remoteVideo : list) {
+                    List<RemoteVideo> tmplist = (List<RemoteVideo>) msg.obj;
+                    for (RemoteVideo remoteVideo : tmplist) {
+//                        if(list.contains(remoteVideo)){
+//                            continue;
+//                        }
                         adapter.addItem(remoteVideo);
                     }
+
                     break;
                 case MSG_TYPE_ANSWER_TIMEOUT:
                     stopAlarm();
                     RtcClient.getInstance().refuse(String.valueOf(msg.obj));
                     adapter.removeItemBySocketId(String.valueOf(msg.obj));
                     //update();
+                    break;
+                case MSG_TYPE_REQUEST_VIDEO_LIST:
+                    getGuidanceIssue();
                     break;
             }
             super.handleMessage(msg);
@@ -272,6 +303,12 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     private Uri getSystemDefultRingtoneUri() {
         return RingtoneManager.getActualDefaultRingtoneUri(this,
                 RingtoneManager.TYPE_RINGTONE);
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        stopRequestLoop();
     }
 
 

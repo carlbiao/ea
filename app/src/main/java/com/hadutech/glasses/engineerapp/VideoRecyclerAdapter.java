@@ -8,15 +8,22 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.HashSet;
 import java.util.List;
 
 public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdapter.ViewHolder> {
 
     private List<RemoteVideo> list;
+    private HashSet<String> idSet;
     private OnItemClickListener onItemClickListener = null;
+
 
     public VideoRecyclerAdapter(List<RemoteVideo> list){
         this.list = list;
+        this.idSet = new HashSet<>();
+        for(RemoteVideo remoteVideo : list){
+            this.idSet.add(remoteVideo.getId());
+        }
     }
 
     @NonNull
@@ -81,17 +88,26 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
     }
 
     public void addItem(int index,RemoteVideo s){
+        if(idSet.contains( s.getId())){
+            return;
+        }
         list.add(index,s);
+        idSet.add(s.getId());
         notifyItemInserted(index);
     }
 
     public void addItem(RemoteVideo s){
+        if(idSet.contains( s.getId())){
+            return;
+        }
         list.add(s);
+        idSet.add(s.getId());
         notifyItemInserted(list.size()-1);
     }
 
     public void removeItem(int index){
-        list.remove(index);
+        RemoteVideo removeItem = list.remove(index);
+        idSet.remove(removeItem.getId());
         notifyItemRemoved(index);
     }
 
@@ -105,6 +121,7 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoRecyclerAdap
             if(socketId.equals(video.getRemoteSocketId())){
                 int index = list.indexOf(video);
                 removeItem(index);
+                idSet.remove(video.getId());
                 return;
             }
         }

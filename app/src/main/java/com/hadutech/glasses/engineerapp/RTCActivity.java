@@ -75,6 +75,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     private Boolean isScreenShots = false;
 //    private FrameLayout maskLayout = null;
     private ScreenShotsView screenShotsView = null;
+    private boolean isDrawPath = false;
     private RelativeLayout screenShotsContainer = null;
     private Boolean isZoom = false;
     private int zoomScale = 1;
@@ -350,6 +351,9 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         ImageView cancleImage = findViewById(R.id.img_rtc_cancle);
         cancleImage.setOnClickListener(this);
 
+        ImageView drawImage = findViewById(R.id.img_rtc_drawpath);
+        drawImage.setOnClickListener(this);
+
     }
 
 
@@ -508,6 +512,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         remoteVideoView.setVisibility(View.GONE);
         screenShotsView.setBitmap(bitmap);
         screenShotsView.reset();
+        processDrawAction(false);
         screenShotsContainer.setVisibility(View.VISIBLE);
 //        screenShotsView.invalidate();
     }
@@ -558,6 +563,20 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 showLoading(ExLoadingFactory.TYPE_SEND_MESSAGE);
                 sendImage();
                 break;
+            case R.id.img_rtc_drawpath:
+                processDrawAction(!isDrawPath);
+                break;
+        }
+    }
+
+    private void processDrawAction(boolean flag){
+        isDrawPath = flag;
+        screenShotsView.setDraw(isDrawPath);
+        ImageView drawPathImage = findViewById(R.id.img_rtc_drawpath);
+        if(isDrawPath){
+            drawPathImage.setBackgroundResource(R.drawable.img_drawpath_shape);
+        }else{
+            drawPathImage.setBackgroundResource(0);
         }
     }
 
