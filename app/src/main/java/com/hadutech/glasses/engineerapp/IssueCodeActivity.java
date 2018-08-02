@@ -17,6 +17,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     private Button playButton;
     private Button stopButton;
     private String detailType = "";
+    private ProgressBar progressBar;
 
 
 
@@ -121,6 +123,8 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
 
         stopButton = (Button)findViewById(R.id.btn_stop_music);
         stopButton.setOnClickListener(this);
+
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
         if(readStatus == false){
 
@@ -311,41 +315,82 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
+
+
+
     //播放音频的点击事件
     @Override
     public void onClick(View v){
-        switch (v.getId()){
-            case R.id.btn_play_music:
-//                if (!mediaPlayer.isPlaying()){
-//                    mediaPlayer.start();//开始播放
-//                }else{
-//                    mediaPlayer.pause();//暂停播放
-//                }
-//
-//                long startTime = System.currentTimeMillis();
-
-                playButton.setVisibility(View.GONE);
-                stopButton.setVisibility(View.VISIBLE);
-
-                if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                    ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
+        int id = v.getId();
+        if (id == R.id.btn_play_music) {
+            progressBar.setVisibility(View.VISIBLE);
+            playButton.setVisibility(View.GONE);
+            stopButton.setVisibility(View.VISIBLE);
+            if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
                 }else {
                     mediaPlayer = new MediaPlayer();
                     initMediaPlay();//初始化MediaPlayer
                 }
+//                progressBar.setVisibility(View.GONE);
                 mediaPlayer.start();
-                break;
-            case R.id.btn_stop_music:
-                mediaPlayer.stop();
+        }else if (id == R.id.btn_stop_music) {
+            mediaPlayer.stop();
                 mediaPlayer = null;
                 playButton.setVisibility(View.VISIBLE);
                 stopButton.setVisibility(View.GONE);
-                break;
-                default:
-                    break;
+                progressBar.setVisibility(View.GONE);
         }
+//        switch (v.getId()){
+//            case R.id.btn_play_music:
+//                progressBar.setVisibility(View.VISIBLE);
+////                if (!mediaPlayer.isPlaying()){
+////                    mediaPlayer.start();//开始播放
+////                }else{
+////                    mediaPlayer.pause();//暂停播放
+////                }
+////
+////                long startTime = System.currentTimeMillis();
+//
+////                if (progressBar.getVisibility() == View.GONE){
+////                    progressBar.setVisibility(View.VISIBLE);
+////                } else {
+////                    progressBar.setVisibility(View.GONE);
+////                }
+//
+//                playButton.setVisibility(View.GONE);
+//                stopButton.setVisibility(View.VISIBLE);
+//
+//
+//
+//
+//
+//                if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
+//                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+//                    ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
+//                            Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
+//                }else {
+//
+//                    mediaPlayer = new MediaPlayer();
+//                    initMediaPlay();//初始化MediaPlayer
+//                }
+////                progressBar.setVisibility(View.GONE);
+//                mediaPlayer.start();
+//
+//
+//
+//                break;
+////            case R.id.btn_stop_music:
+////                mediaPlayer.stop();
+////                mediaPlayer = null;
+////                playButton.setVisibility(View.VISIBLE);
+////                stopButton.setVisibility(View.GONE);
+////                break;
+//                default:
+//                    break;
+//        }
     }
 
     @Override
@@ -356,6 +401,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
             mediaPlayer.release();
         }
     }
+
 
 
 
