@@ -26,19 +26,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".LoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".MainActivity" />
         <activity
             android:name=".RTCActivity"
             android:screenOrientation="landscape"
-            android:taskAffinity="" >
-
-        </activity>
+            android:taskAffinity="" />
         <activity
             android:name=".VideoRecyclerActivity"
             android:label="远程视频列表"
@@ -46,6 +40,7 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="open_video_action" />
+
                 <category android:name="open_video_category" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -53,6 +48,15 @@
         <activity
             android:name=".IssueCodeActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <activity android:name=".StartPage"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
