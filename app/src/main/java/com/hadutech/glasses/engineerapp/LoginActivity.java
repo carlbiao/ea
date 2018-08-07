@@ -76,6 +76,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
 //                    Log.d(TAG, "codeMsg:"+codeMsg);
 //                    ToastUtil toastUtil = new ToastUtil();
 //                    toastUtil.Short(LoginActivity.this,codeMsg).show().setToastBackground(Color.WHITE,R.drawable.toast_radius).show();
+
                     //自定义了Toast
                     View view = LayoutInflater.from(LoginActivity.this).inflate(R.layout.toast_view,null);
                     new ToastUtil(LoginActivity.this,view,Toast.LENGTH_SHORT).show();
