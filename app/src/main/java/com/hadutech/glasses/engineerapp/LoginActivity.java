@@ -3,16 +3,21 @@ package com.hadutech.glasses.engineerapp;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hadutech.glasses.engineerapp.events.RtcEvent;
@@ -44,6 +49,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     private Button forgetPwdButton = null;
     private View cleanView = null;
 
+
+
     //定义调用接口返回的信息
     String codeMsg = null;
     int engCode=0;
@@ -65,8 +72,13 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                 case 2:
                     Toast.makeText(LoginActivity.this,"网络链接异常",Toast.LENGTH_SHORT).show();
                 case 3:
-                    Toast.makeText(LoginActivity.this,codeMsg,Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "codeMsg:"+codeMsg);
+//                    Toast.makeText(LoginActivity.this,codeMsg,Toast.LENGTH_SHORT).show();
+//                    Log.d(TAG, "codeMsg:"+codeMsg);
+//                    ToastUtil toastUtil = new ToastUtil();
+//                    toastUtil.Short(LoginActivity.this,codeMsg).show().setToastBackground(Color.WHITE,R.drawable.toast_radius).show();
+                    //自定义了Toast
+                    View view = LayoutInflater.from(LoginActivity.this).inflate(R.layout.toast_view,null);
+                    new ToastUtil(LoginActivity.this,view,Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -130,6 +142,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
             Toast.makeText(LoginActivity.this,"请输入工号",Toast.LENGTH_SHORT).show();
             return;
         }
+
         if (TextUtils.isEmpty(password)){
             Toast.makeText(LoginActivity.this,"请输入密码",Toast.LENGTH_SHORT).show();
             return;

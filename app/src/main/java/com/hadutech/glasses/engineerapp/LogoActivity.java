@@ -18,14 +18,14 @@ public class LogoActivity {
     public LogoActivity(Activity context){
         logoView=context.findViewById(R.id.logo_bar);
         logoBar=(LinearLayout)logoView.findViewById(R.id.logo_bar);
-        msg_title=(TextView)logoView.findViewById(R.id.msg_title);
+//        msg_title=(TextView)logoView.findViewById(R.id.msg_title);
     }
 
 
     //用于设置标题栏文字
     public LogoActivity setLogoText(String logoText){
         if (!TextUtils.isEmpty(logoText)){
-            msg_title.setText(logoText);
+//            msg_title.setText(logoText);
         }
         return this;
     }

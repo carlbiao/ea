@@ -4,16 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="50dp"
     android:orientation="horizontal"
-    android:gravity="center"
-    android:background="#659BF9">
+    android:gravity="center">
 
 
 
-        <TextView
-            android:id="@+id/msg_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="17dp"
-            android:textColor="#FFFFFF"/>
+        <!--<TextView-->
+            <!--android:id="@+id/msg_title"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="17dp"-->
+            <!--android:textColor="#FFFFFF"/>-->
 
 </LinearLayout>

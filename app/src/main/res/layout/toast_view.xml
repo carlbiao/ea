@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvToastContent"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#FFC371"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:text="输入信息有误，请仔细检查后重试。"
+        />
+
+</RelativeLayout>
