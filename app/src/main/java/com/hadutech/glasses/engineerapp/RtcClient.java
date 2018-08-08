@@ -226,14 +226,24 @@ public class RtcClient {
      * 挂断
      */
     public void hungup(){
+        //localMediaStream.dispose();
         if (this.videoSource != null) {
 
             this.videoSource.stop();
         }
+//        if(this.audioSource != null){
+//            try{
+//                this.audioSource.dispose();
+//            }catch (Exception ex){
+//                Log.e(TAG,"yichang");
+//            }
+//
+//        }
         if (this.peer != null) {
             this.peer.pc.close();
             //this.peer.pc.dispose();
-            this.peer.dataChannel.dispose();
+            //this.peer.dataChannel.dispose();
+            this.peer.dataChannel.close();
             this.peer = null;
         }
     }
@@ -572,6 +582,13 @@ public class RtcClient {
             String state = iceConnectionState.toString();
             if(state.equals("DISCONNECTED")){
                 state = "CLOSED";
+            }
+            if(state.equals("CLOSED")){
+                try {
+                    sendMessage(remoteSocketId,"hungup",null);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
             if(state.equals("COMPLETED")){
                 onCalling = true;
