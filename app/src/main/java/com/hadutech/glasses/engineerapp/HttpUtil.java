@@ -2,6 +2,10 @@ package com.hadutech.glasses.engineerapp;
 
 import android.util.Log;
 
+import com.hadutech.glasses.engineerapp.events.AppEvent;
+
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,9 +24,9 @@ import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -56,26 +60,28 @@ public class HttpUtil {
     }).connectTimeout(15, TimeUnit.SECONDS)//设置连接超时时间
             .readTimeout(20, TimeUnit.SECONDS)
             .writeTimeout(20, TimeUnit.SECONDS)
+//            .addInterceptor(new LoginInterceptor())
             .build();
 
-    private synchronized static ExecutorService getExecutorService(){
-        if(executorService == null){
+    private synchronized static ExecutorService getExecutorService() {
+        if (executorService == null) {
             int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
             int KEEP_ALIVE_TIME = 1;
             TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
             BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<Runnable>();
             executorService = new ThreadPoolExecutor(NUMBER_OF_CORES,
-                    NUMBER_OF_CORES*2, KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, taskQueue);
+                    NUMBER_OF_CORES * 2, KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, taskQueue);
         }
         return executorService;
     }
 
     /**
      * 发送Get请求
+     *
      * @param url
      * @param callback
      */
-    public static void doGet(final String url,final Callback callback){
+    public static void doGet(final String url, final Callback callback) {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -83,7 +89,8 @@ public class HttpUtil {
                         .url(url)
                         .build();
                 Call call = sOkHttpClient.newCall(request);
-                call.enqueue(callback);
+                call.enqueue(new SessionCheckCallback(callback));
+//                call.enqueue(callback);
             }
         };
         getExecutorService().execute(runnable);
@@ -91,10 +98,12 @@ public class HttpUtil {
 
     /**
      * 发送Post请求
+     *
      * @param url
      * @param callback
      */
-    public static void doPost(final String url,final Map<String,Object> postParams,final Callback callback) {
+    public static void doPost(final String url, final Map<String, Object> postParams, final Callback callback) {
+
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -107,10 +116,69 @@ public class HttpUtil {
                 FormBody requestBody = builder.build();
                 Request request = new Request.Builder().url(url).post(requestBody).build();
                 Call call = sOkHttpClient.newCall(request);
-                call.enqueue(callback);
+                call.enqueue(new SessionCheckCallback(callback));
+//                call.enqueue(callback);
             }
 
         };
         getExecutorService().execute(runnable);
+    }
+
+    static class SessionCheckCallback implements Callback {
+
+        private Callback originalCallback;
+
+        public SessionCheckCallback(Callback callback) {
+            this.originalCallback = callback;
+        }
+
+        @Override
+        public void onFailure(Call call, IOException e) {
+            originalCallback.onFailure(call, e);
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            Log.i(TAG, "Http request statistics, url = " + response.request().url().toString() + ", statusCode = " + response.code());
+            if (checkSession(response)) {
+                EventBus.getDefault().post(new AppEvent(AppEvent.EVENT_TYPE_LOGOUT));
+            } else {
+//                call.enqueue(originalCallback);
+                originalCallback.onResponse(call, response);
+            }
+        }
+
+        private boolean checkSession(Response response) {
+            if (response.code() == 251) {
+                EventBus.getDefault().post(new AppEvent(AppEvent.EVENT_TYPE_LOGOUT));
+                Log.w(TAG, "Session timeout!!!");
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    static class LoginInterceptor implements Interceptor {
+
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            String url = chain.request().url().toString();
+            Response response = chain.proceed(chain.request());
+            try {
+                if (response != null) {
+                    Log.i(TAG, "Http request statistics, url = " + url + ", result = " + response.code());
+                    // session过期或未登录
+                    if (response.code() == 251) {
+                        EventBus.getDefault().post(new AppEvent(AppEvent.EVENT_TYPE_LOGOUT));
+                        Log.w(TAG, "Session timeout!!!");
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "", e);
+            }
+
+            return response;
+        }
     }
 }

@@ -74,12 +74,14 @@ public class RtcClient {
     private static final String TAG = "RTCClient";
 
     private static RtcClient _instance = null;
+
     public static RtcClient getInstance() {
         if (_instance == null) {
             _instance = new RtcClient();
         }
         return _instance;
     }
+
     private RtcClient() {
         //初始化coTurn server地址
         //TODO 根据实际情况更改
@@ -144,6 +146,7 @@ public class RtcClient {
             return true;
         }
     }
+
     /**
      * 连接到信令服务器
      *
@@ -151,9 +154,9 @@ public class RtcClient {
      * @param personId 工程师id
      * @param type     连接类型
      */
-    public void connect( String name, String personId, int type) {
+    public void connect(String name, String personId, int type) {
         //建立socket连接
-        if(socketConnected){
+        if (socketConnected) {
             return;
         }
         SSLContext sc = null;
@@ -197,11 +200,12 @@ public class RtcClient {
         }
     }
 
-    public void setRtcHandler(Handler socketHandler){
+    public void setRtcHandler(Handler socketHandler) {
         this.rtcHandler = socketHandler;
     }
 
     /**
+     * TODO 需要测试
      * 关闭所有连接，只能在注销/应用程序销毁时调用
      */
     public void close(){
@@ -223,6 +227,7 @@ public class RtcClient {
     }
 
     /**
+     * TODO 需要测试
      * 挂断
      */
     public void hungup(){
@@ -248,36 +253,36 @@ public class RtcClient {
         }
     }
 
-    public void sendImageToPeer(String imageContent){
+    public void sendImageToPeer(String imageContent) {
         Long msgNum = System.currentTimeMillis();//使用时间戳作为消息编号
-        if(this.peer != null && this.peer.pc != null){
+        if (this.peer != null && this.peer.pc != null) {
             StringBuffer s = new StringBuffer(imageContent);
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("type","base64");
-            jsonObject.addProperty("content",imageContent);
+            jsonObject.addProperty("type", "base64");
+            jsonObject.addProperty("content", imageContent);
 
 
             String sendContent = gson.toJson(jsonObject);
             StringBuilder stringBuilder = new StringBuilder(sendContent);
-            Log.e(TAG,sendContent);
+            Log.e(TAG, sendContent);
             int MAX_TRUNK = 30000;
-            int packageNum = (int) Math.ceil(sendContent.length()/MAX_TRUNK)+1;
-            for(int i = 0;i<packageNum;i++){
+            int packageNum = (int) Math.ceil(sendContent.length() / MAX_TRUNK) + 1;
+            for (int i = 0; i < packageNum; i++) {
                 //如果content大于MAX_TRUNK长度，则分包发送
-                int end = (i+1) * MAX_TRUNK;
-                if(end >= stringBuilder.length()){
+                int end = (i + 1) * MAX_TRUNK;
+                if (end >= stringBuilder.length()) {
                     end = stringBuilder.length();
                 }
-                String tmpContent = stringBuilder.substring(i*MAX_TRUNK,end);
+                String tmpContent = stringBuilder.substring(i * MAX_TRUNK, end);
                 JsonObject sendJsonObject = new JsonObject();
-                sendJsonObject.addProperty("id",msgNum);
-                sendJsonObject.addProperty("total",packageNum);
-                sendJsonObject.addProperty("content",tmpContent);
-                sendJsonObject.addProperty("index",i);
+                sendJsonObject.addProperty("id", msgNum);
+                sendJsonObject.addProperty("total", packageNum);
+                sendJsonObject.addProperty("content", tmpContent);
+                sendJsonObject.addProperty("index", i);
 
                 byte[] byteArray = tmpContent.getBytes();
 
-                DataChannel.Buffer buffer = new DataChannel.Buffer(ByteBuffer.wrap(gson.toJson(sendJsonObject).getBytes()),false);
+                DataChannel.Buffer buffer = new DataChannel.Buffer(ByteBuffer.wrap(gson.toJson(sendJsonObject).getBytes()), false);
                 this.peer.dataChannel.send(buffer);
             }
             //Gson gson = new Gson();
@@ -331,8 +336,8 @@ public class RtcClient {
                     } else if (messageType.equals("call")) {
                         JSONObject streamData = data.getJSONObject("stream");
                         //收到员工的call
-                        if(onCalling){
-                            sendMessage(String.valueOf(data.get("streamId")),"refuse",null);
+                        if (onCalling) {
+                            sendMessage(String.valueOf(data.get("streamId")), "refuse", null);
                             return;
                         }
                         onCalling = true;
@@ -343,7 +348,7 @@ public class RtcClient {
                         event.setRemoteSocketId(String.valueOf(streamData.get("streamId")));
                         String code = "";
 
-                        if(data.has("code")){
+                        if (data.has("code")) {
                             code = String.valueOf(data.get("code"));
                         }
                         event.setId(code);
@@ -361,13 +366,24 @@ public class RtcClient {
                     } else if (messageType.equals("candidate")) {
                         String sdpMid = data.getJSONObject("payload").getString("id");
                         int sdpMLineIndex = data.getJSONObject("payload").getInt("label");
-                        String sdp = data.getJSONObject("payload").getString("candidate");;
-                        IceCandidate iceCandidate = new IceCandidate(sdpMid,sdpMLineIndex,sdp);
+                        String sdp = data.getJSONObject("payload").getString("candidate");
+                        ;
+                        IceCandidate iceCandidate = new IceCandidate(sdpMid, sdpMLineIndex, sdp);
 
                         peer.pc.addIceCandidate(iceCandidate);
-                    }else if(messageType.equals("refuse")){
+                    } else if (messageType.equals("refuse")) {
                         //拒绝通话
                         rtcHandler.sendEmptyMessage(RTC_MESSAGE_TYPE_REFUSE);
+                    }else if (messageType.equals("hungup")) {
+                        //TODO 接收到对方挂断消息，主动关闭peer
+                        if (videoSource != null) {
+                            videoSource.stop();
+                        }
+                        if (peer != null) {
+                            peer.pc.close();
+                            peer.dataChannel.close();
+                            peer = null;
+                        }
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -451,16 +467,16 @@ public class RtcClient {
         peer.pc.setRemoteDescription(sdpObserver, sdp);
     }
 
-    public void getEngineersOnlineStatus(List<String> engieers){
+    public void getEngineersOnlineStatus(List<String> engieers) {
         JSONArray engineerPostDatas = new JSONArray();
-        for(String pid : engieers){
+        for (String pid : engieers) {
             engineerPostDatas.put(pid);
         }
         //发送call
-        rtcClient.emit("onlineEngineerList",engineerPostDatas);
+        rtcClient.emit("onlineEngineerList", engineerPostDatas);
     }
 
-    public void callTo( String engineerId) {
+    public void callTo(String engineerId) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("personId", engineerId);
@@ -471,9 +487,9 @@ public class RtcClient {
         rtcClient.emit("call", jsonObject);
     }
 
-    public void refuse(String remoteSocketId){
+    public void refuse(String remoteSocketId) {
         try {
-            sendMessage(remoteSocketId,"refuse",null);
+            sendMessage(remoteSocketId, "refuse", null);
             onCalling = false;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -499,17 +515,16 @@ public class RtcClient {
     }
 
 
-
-    public void startCamera(Context context, GLSurfaceView localVideoView,boolean initializeVideo, boolean initializeAudio, int videoWidth, int videoHeight) {
+    public void startCamera(Context context, GLSurfaceView localVideoView, boolean initializeVideo, boolean initializeAudio, int videoWidth, int videoHeight) {
         if (factory == null) {
-            PeerConnectionFactory.initializeAndroidGlobals(context, initializeAudio, true, true,null);
+            PeerConnectionFactory.initializeAndroidGlobals(context, initializeAudio, true, true, null);
             // PeerConnectionFactory.Options options = new PeerConnectionFactory.Options();
             factory = new PeerConnectionFactory();
         }
 
         localMediaStream = factory.createLocalMediaStream("102");
 
-        if(initializeVideo){
+        if (initializeVideo) {
 
             //启动相机
             String frontFacingCam = VideoCapturerAndroid.getNameOfFrontFacingDevice();//前面的摄像头
@@ -517,11 +532,11 @@ public class RtcClient {
             //TODO 使用前置摄像头，眼镜需要改为使用后端摄像头
             VideoCapturer videoCapturerAndroid = VideoCapturerAndroid.create(frontFacingCam);
             MediaConstraints videoConstraints = new MediaConstraints();//使用720p
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth","1280"));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight","720"));
+            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", "1280"));
+            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", "720"));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minWidth", "640"));
-            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minHeight","480"));
-            videoSource = factory.createVideoSource(videoCapturerAndroid,videoConstraints);
+            videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minHeight", "480"));
+            videoSource = factory.createVideoSource(videoCapturerAndroid, videoConstraints);
             VideoTrack localVideoTrack = factory.createVideoTrack("100", videoSource);
             if (localVideoView != null) {
                 this.localVideoView = localVideoView;
@@ -530,7 +545,7 @@ public class RtcClient {
             }
             localMediaStream.addTrack(localVideoTrack);
         }
-        if(initializeAudio){
+        if (initializeAudio) {
             //启动麦克风
             audioSource = factory.createAudioSource(pcConstraints);
             AudioTrack localAudioTrack = factory.createAudioTrack("101", audioSource);
@@ -539,11 +554,8 @@ public class RtcClient {
     }
 
 
-
-
-
-    public void onPause(){
-        if(this.localVideoView != null){
+    public void onPause() {
+        if (this.localVideoView != null) {
             this.localVideoView.onPause();
             this.videoSource.stop();
         }
@@ -551,7 +563,7 @@ public class RtcClient {
     }
 
     public void onResume() {
-        if(this.localVideoView != null){
+        if (this.localVideoView != null) {
             this.localVideoView.onResume();
             this.videoSource.restart();
         }
@@ -565,11 +577,11 @@ public class RtcClient {
     /**
      * RTC端点处理对象
      */
-    private class Peer implements PeerConnection.Observer,DataChannel.Observer {
+    private class Peer implements PeerConnection.Observer, DataChannel.Observer {
         private PeerConnection pc;
         private DataChannel dataChannel;
         private String remoteSocketId;
-        private Map<String,StringBuilder> receivedMsgMap = new HashMap<>();
+        private Map<String, StringBuilder> receivedMsgMap = new HashMap<>();
 
         @Override
         public void onSignalingChange(PeerConnection.SignalingState signalingState) {
@@ -578,9 +590,9 @@ public class RtcClient {
         @Override
         public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
             //if (iceConnectionState == ) {
-            Log.e(TAG,"onIceConnectionChange:" + iceConnectionState.toString());
+            Log.e(TAG, "onIceConnectionChange:" + iceConnectionState.toString());
             String state = iceConnectionState.toString();
-            if(state.equals("DISCONNECTED")){
+            if (state.equals("DISCONNECTED")) {
                 state = "CLOSED";
             }
             if(state.equals("CLOSED")){
@@ -589,13 +601,11 @@ public class RtcClient {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                onCalling = false;
             }
             if(state.equals("COMPLETED")){
                 onCalling = true;
-            }else if(state.equals("CLOSED")){
-                onCalling = false;
             }
-
             Message msg = new Message();
             msg.what = RTC_MESSAGE_TYPE_ICECONNECTIONCHANGE;
             msg.obj = state;
@@ -644,7 +654,7 @@ public class RtcClient {
 
         @Override
         public void onDataChannel(DataChannel dataChannel) {
-            Log.e(TAG,"onDataChannel");
+            Log.e(TAG, "onDataChannel");
             this.dataChannel = dataChannel;
             this.dataChannel.registerObserver(this);
             //dataChannel.registerObserver(this);
@@ -662,7 +672,7 @@ public class RtcClient {
             this.remoteSocketId = remoteSocketId;
             pc.addStream(localMediaStream);
             DataChannel.Init init = new DataChannel.Init();
-            this.dataChannel = this.pc.createDataChannel("sendChannel",init);
+            this.dataChannel = this.pc.createDataChannel("sendChannel", init);
 
         }
 
@@ -686,26 +696,26 @@ public class RtcClient {
             String msgId = msgJson.get("id").getAsString();
             int total = msgJson.get("total").getAsInt();
             int index = msgJson.get("index").getAsInt();
-            if(total == 1){
+            if (total == 1) {
                 //不分包
                 String content = msgJson.get("content").getAsString();
                 Message message = new Message();
                 message.what = RTC_MESSAGE_TYPE_RECEIVE_MESSAGE;
                 message.obj = content;
                 rtcHandler.sendMessage(message);
-            }else{
+            } else {
                 StringBuilder stringBuilder;
                 //分包
-                if(index == 0){
+                if (index == 0) {
                     stringBuilder = new StringBuilder();
                     stringBuilder.append(msgJson.get("content").getAsString());
-                    this.receivedMsgMap.put(msgId,stringBuilder);
+                    this.receivedMsgMap.put(msgId, stringBuilder);
 
-                }else{
+                } else {
                     stringBuilder = this.receivedMsgMap.get(msgId);
                     stringBuilder.append(msgJson.get("content").getAsString());
                 }
-                if(index == (total-1)){
+                if (index == (total - 1)) {
                     //已经拿到所有分包
                     String allContent = stringBuilder.toString();
                     this.receivedMsgMap.remove(msgId);
@@ -757,7 +767,7 @@ public class RtcClient {
                 //创建答复
                 Log.e(TAG, "set Remote SDP complete!");
                 peer.pc.createAnswer(this, pcConstraints);
-            }else{
+            } else {
                 Log.e(TAG, "set Local SDP complete!");
                 try {
                     sendMessage(this.remoteId, "answer", payload);
