@@ -341,12 +341,8 @@ public class RtcClient {
                         if (data.has("code")) {
                             code = String.valueOf(data.get("code"));
                         }
-
                         event.setId(code);
-                        //event.setId("2342342553");
                         EventBus.getDefault().post(event);
-                        //rtcHandler.sendMessage(message);
-                        //EventBus.getDefault().post(new RtcEvent());
                     } else if (messageType.equals("offer")) {
                         //收到offer
                         onOffer((String) data.get("from"), data.getJSONObject("payload"));
@@ -716,6 +712,7 @@ public class RtcClient {
         private String remoteId;
         private PeerConnection pc;
         private boolean isSetLocal = false;
+        private JSONObject payload = null;
 
         public RemotePeerSdpObserver(String remoteId, PeerConnection pc) {
             this.remoteId = remoteId;
@@ -726,15 +723,9 @@ public class RtcClient {
         public void onCreateSuccess(final SessionDescription sdp) {
             // 创建answer成功
             try {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("type", "answer");
-                jsonObject.put("to", this.remoteId);
-                JSONObject payload = new JSONObject();
+                payload = new JSONObject();
                 payload.put("type", sdp.type.canonicalForm());
                 payload.put("sdp", sdp.description);
-                jsonObject.put("payload", payload);
-                rtcClient.emit("message", jsonObject);
-                sendMessage(this.remoteId, "answer", payload);
                 isSetLocal = true;
                 Log.e(TAG, "set Local SDP......");
                 pc.setLocalDescription(this, sdp);
@@ -746,14 +737,18 @@ public class RtcClient {
         @Override
         public void onSetSuccess() {
 
-            //设置本地则不需要答复了
-            if (!isSetLocal) {
+            //设置本地则不需要答复了，
+            if (isSetLocal == false) {
                 //创建答复
                 Log.e(TAG, "set Remote SDP complete!");
                 peer.pc.createAnswer(this, pcConstraints);
             } else {
                 Log.e(TAG, "set Local SDP complete!");
-
+                try {
+                    sendMessage(this.remoteId, "answer", payload);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -774,7 +769,7 @@ public class RtcClient {
     private class LocalPeerSdpObserver implements SdpObserver {
         private String remoteId;
         private PeerConnection pc;
-        private boolean isSetLocal = false;
+        private JSONObject payload = null;
 
         public LocalPeerSdpObserver(String remoteId, PeerConnection pc) {
             this.remoteId = remoteId;
@@ -788,14 +783,13 @@ public class RtcClient {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("type", "offer");
                 jsonObject.put("to", this.remoteId);
-                JSONObject payload = new JSONObject();
+                payload = new JSONObject();
                 payload.put("type", sdp.type.canonicalForm());
                 payload.put("sdp", sdp.description);
                 jsonObject.put("payload", payload);
-                rtcClient.emit("message", jsonObject);
-                isSetLocal = true;
                 pc.setLocalDescription(this, sdp);
-                sendMessage(this.remoteId, "offer", payload);
+                Log.e(TAG, "create Offer complete!");
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -803,7 +797,12 @@ public class RtcClient {
 
         @Override
         public void onSetSuccess() {
-            Log.e(TAG, "onSetSuccess");
+            Log.e(TAG, "set Local DSP complete!");
+            try {
+                sendMessage(this.remoteId, "offer", payload);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override

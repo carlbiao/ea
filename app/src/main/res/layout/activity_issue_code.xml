@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#EFF4FA"
+    android:id="@+id/ll_issue_parent"
     tools:context="com.hadutech.glasses.engineerapp.IssueCodeActivity">
 
     <include layout="@layout/logo_message"/>
@@ -182,7 +183,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="15dp"
                         android:padding="5dp"
-                        android:text="汽车发动机的生命周期较长，但存在故障可能性，仅在发生故障时进行更换，因而通用性较低，技术要求也更高。"
+                        android:text=""
                         android:textColor="#808080"
                         android:background="#f5f5f5"
                         android:textSize="14dp"/>
@@ -222,18 +223,6 @@
                         android:textColor="#FFFFFF"/>
 
                 </RelativeLayout>
-
-
-
-
-
-                <ProgressBar
-                    android:id="@+id/progress_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"/>
-
-
             </RelativeLayout>
 
         </LinearLayout>
