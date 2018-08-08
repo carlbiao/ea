@@ -4,18 +4,17 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.AudioManager;
-import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.opengl.GLSurfaceView;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -25,6 +24,7 @@ import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -43,14 +43,12 @@ import com.google.gson.JsonObject;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
 
 import com.hadutech.glasses.engineerapp.events.ScreenShotEvent;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -458,7 +456,7 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         if (mobileNetworkInfo != null) {
             available = (available || mobileNetworkInfo.isAvailable());
         }
-        
+
         if (available) {
             wifiStatusView.setBackgroundResource(R.drawable.rtc_status_tv_ok);
         } else {
@@ -544,9 +542,10 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_rtc_hangup:
+                showStopVideoDialog();
                 //Log.e(TAG,"挂断");
-                RtcClient.getInstance().hungup();
-                finish();
+//                RtcClient.getInstance().hungup();
+//                finish();
                 break;
             case R.id.btn_rtc_detail:
                 //Log.e(TAG,"详情");
@@ -744,5 +743,38 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         if (needReLayout) {
             remoteVideoView.setLayoutParams(layoutParams);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // 提示是否结束通话
+            showStopVideoDialog();
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    // 弹出框提示是否挂断通话
+    private void showStopVideoDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Log.e(TAG,"挂断");
+                RtcClient.getInstance().hungup();
+                finish();
+            }
+        });
+        dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        dialog.setMessage("是否结束视频通话");
+        dialog.setTitle("提示");
+        dialog.show();
     }
 }
