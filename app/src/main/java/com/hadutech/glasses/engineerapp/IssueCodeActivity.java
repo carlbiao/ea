@@ -151,7 +151,12 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
 
         }
         //设立标题
-        new LogoActivity(this).setIb_left(R.drawable.ic_back).setLogoText("远程视频列表").setIb_right(R.drawable.ic_end);
+        new LogoActivity(this).setIb_left(R.drawable.ic_back).setIb_left(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        }).setLogoText("远程视频列表");
         //获取语音留言问题的方法
         getIssueCode();
     }
