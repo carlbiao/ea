@@ -11,6 +11,7 @@ import com.hadutech.glasses.engineerapp.R;
 public class ExLoadingFactory implements LoadingFactory {
     public static final int TYPE_SEND_MESSAGE = 1;
     public static final int TYPE_SCREEN_SHOT = 2;
+    public static final int TYPE_GET_VOICE = 3;
     private int template;
     @Override
     public View onCreateView(ViewGroup parent) {
@@ -28,6 +29,9 @@ public class ExLoadingFactory implements LoadingFactory {
                 break;
             case TYPE_SCREEN_SHOT:
                 template = R.layout.loading_process_dialog_screenshot;
+                break;
+            case TYPE_GET_VOICE:
+                template = R.layout.loading_process_dialog_get_voice;
                 break;
         }
     }

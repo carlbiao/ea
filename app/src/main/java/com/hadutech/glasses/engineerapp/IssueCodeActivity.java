@@ -17,9 +17,13 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.dyhdyh.widget.loading.bar.LoadingBar;
 
 import org.json.JSONObject;
 
@@ -50,7 +54,8 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     private Button playButton;
     private Button stopButton;
     private String detailType = "";
-    private ProgressBar progressBar;
+    private LinearLayout parent = null;
+    private Boolean showLoadingDialog = false;
 
 
 
@@ -84,8 +89,14 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     userId.setText(user_id);
                     TextView problem = (TextView)findViewById(R.id.tv_problems);
                     problem.setText(problems);
-
-
+                    Button playMusicButton = findViewById(R.id.btn_play_music);
+                    if(voice.equals("")){
+                        playMusicButton.setBackgroundResource(R.drawable.btn_play_music_shape_disable);
+                        playMusicButton.setEnabled(false);
+                    }else{
+                        playMusicButton.setBackgroundResource(R.drawable.btn_play_music_shape);
+                        playMusicButton.setEnabled(true);
+                    }
 
                     break;
                 case 2:
@@ -100,6 +111,12 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     TextView orgName = (TextView)findViewById(R.id.tv_org_name);
                     orgName.setText(org_name);
                     break;
+                case 3:
+                    //LoadingBar.cancel(parent);
+                    hideLoading();
+                    playButton.setVisibility(View.GONE);
+                    stopButton.setVisibility(View.VISIBLE);
+                    break;
             }
         }
     };
@@ -112,22 +129,18 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         code = intent.getStringExtra("code");
         boolean readStatus = intent.getBooleanExtra("readStatus",false);
         detailType = intent.getStringExtra("detailType");
+        parent = findViewById(R.id.ll_issue_parent);
         if(detailType.equals("issue") == false){
             findViewById(R.id.rl_issue_voice).setVisibility(View.GONE);
             findViewById(R.id.rl_issue_voice_split_line).setVisibility(View.GONE);
 
         }
-
         playButton = (Button)findViewById(R.id.btn_play_music);
         playButton.setOnClickListener(this);
 
         stopButton = (Button)findViewById(R.id.btn_stop_music);
         stopButton.setOnClickListener(this);
-
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-
         if(readStatus == false){
-
             //调用2.4接口，更新工程师读取留言问题记录状态
             HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/status/update?code="+code+"&status=true", new Callback() {
                 @Override
@@ -298,8 +311,11 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     //播放音频的方法
     private void initMediaPlay(){
         try {
+            Long start = System.currentTimeMillis();
             mediaPlayer.setDataSource(this,Uri.parse(voice));//指定音频文件的路径
             mediaPlayer.prepare();//让MediaPlayer进入到准备状态
+            Long end = System.currentTimeMillis();
+            Log.e(TAG,"播放：" + (end-start) + "ms");
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -321,81 +337,52 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     }
 
 
+    private Runnable playMusicRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mediaPlayer = new MediaPlayer();
+            initMediaPlay();
+            mediaPlayer.start();
 
+            handler.sendEmptyMessage(3);
+        }
+    };
+
+    private Thread playMusicThread = null;
+    private volatile boolean isPlaying = false;
 
     //播放音频的点击事件
     @Override
     public void onClick(View v){
+        if(showLoadingDialog){
+            return;
+        }
         int id = v.getId();
         if (id == R.id.btn_play_music) {
-            progressBar.setVisibility(View.VISIBLE);
-            playButton.setVisibility(View.GONE);
-            stopButton.setVisibility(View.VISIBLE);
+
+
             if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                 ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
                         Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
                 }else {
-                    mediaPlayer = new MediaPlayer();
-                    initMediaPlay();//初始化MediaPlayer
+                isPlaying = true;
+                if(mediaPlayer == null){
+                    showLoading(ExLoadingFactory.TYPE_GET_VOICE);
+                    playMusicThread = new Thread(playMusicRunnable);
+                    playMusicThread.start();
+                }else{
+                    playButton.setVisibility(View.GONE);
+                    stopButton.setVisibility(View.VISIBLE);
+                    mediaPlayer.reset();
+                    mediaPlayer.start();
                 }
-//                progressBar.setVisibility(View.GONE);
-                mediaPlayer.start();
+            }
         }else if (id == R.id.btn_stop_music) {
             mediaPlayer.stop();
-                mediaPlayer = null;
-                playButton.setVisibility(View.VISIBLE);
-                stopButton.setVisibility(View.GONE);
-                progressBar.setVisibility(View.GONE);
+            playButton.setVisibility(View.VISIBLE);
+            stopButton.setVisibility(View.GONE);
         }
-//        switch (v.getId()){
-//            case R.id.btn_play_music:
-//                progressBar.setVisibility(View.VISIBLE);
-////                if (!mediaPlayer.isPlaying()){
-////                    mediaPlayer.start();//开始播放
-////                }else{
-////                    mediaPlayer.pause();//暂停播放
-////                }
-////
-////                long startTime = System.currentTimeMillis();
-//
-////                if (progressBar.getVisibility() == View.GONE){
-////                    progressBar.setVisibility(View.VISIBLE);
-////                } else {
-////                    progressBar.setVisibility(View.GONE);
-////                }
-//
-//                playButton.setVisibility(View.GONE);
-//                stopButton.setVisibility(View.VISIBLE);
-//
-//
-//
-//
-//
-//                if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
-//                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-//                    ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
-//                            Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
-//                }else {
-//
-//                    mediaPlayer = new MediaPlayer();
-//                    initMediaPlay();//初始化MediaPlayer
-//                }
-////                progressBar.setVisibility(View.GONE);
-//                mediaPlayer.start();
-//
-//
-//
-//                break;
-////            case R.id.btn_stop_music:
-////                mediaPlayer.stop();
-////                mediaPlayer = null;
-////                playButton.setVisibility(View.VISIBLE);
-////                stopButton.setVisibility(View.GONE);
-////                break;
-//                default:
-//                    break;
-//        }
     }
 
     @Override
@@ -407,6 +394,16 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
+    private void hideLoading() {
+        showLoadingDialog = false;
+        LoadingBar.cancel(parent);
+    }
+
+    private void showLoading(int type) {
+        showLoadingDialog = true;
+        ExLoadingFactory factory = new ExLoadingFactory(type);
+        LoadingBar.make(parent, factory).show();
+    }
 
 
 
