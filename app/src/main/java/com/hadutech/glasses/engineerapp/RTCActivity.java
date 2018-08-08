@@ -107,8 +107,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
             } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_ONLINE_ENGINEER_LIST) {
                 //获取工程师（们）在线状态回调
                 JSONObject jsonObject = (JSONObject) msg.obj;
-                Log.e("MainActivity", jsonObject.toString());
-
             } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_ICECONNECTIONCHANGE) {
                 //视频通话状态变更回调
                 onIceStatusChanged(String.valueOf(msg.obj));
@@ -549,7 +547,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                 break;
             case R.id.btn_rtc_detail:
                 //Log.e(TAG,"详情");
-                Log.e(TAG, "详情：" + remoteVideo.getId());
                 Intent intent = new Intent(RTCActivity.this, IssueCodeActivity.class);
                 intent.putExtra("code", remoteVideo.getId());
                 intent.putExtra("detailType", "calling");
@@ -773,7 +770,7 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                 dialog.dismiss();
             }
         });
-        dialog.setMessage("是否结束视频通话");
+        dialog.setMessage("是否结束视频通话？");
         dialog.setTitle("提示");
         dialog.show();
     }
