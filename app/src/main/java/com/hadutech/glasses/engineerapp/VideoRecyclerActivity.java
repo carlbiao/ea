@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.hadutech.glasses.engineerapp.events.AppEvent;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
@@ -88,7 +89,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
                 handler.sendMessage(message);
             }
         };
-        timer.schedule(timerTask, 3000, 3000);
+        timer.schedule(timerTask, 3000, 60 * 1000);
     }
 
     private void stopRequestLoop() {
@@ -141,38 +142,39 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String issueMsg = response.body().string();
+                Log.i(this.getClass().getName(), "Http request to get issue list complete, result = " + issueMsg);
                 try {
-                    JSONObject issueObj = new JSONObject(issueMsg);
-                    Log.d(TAG, "=======" + issueObj);
-                    Boolean msgStatus = issueObj.optBoolean("status");
-                    JSONArray jsonArray = issueObj.getJSONArray("result");
-                    Log.d(TAG, "+++++++" + jsonArray);
-                    List<RemoteVideo> videoList = new ArrayList<>();
-                    for (int i = jsonArray.length() - 1; i >= 0; i--) {
-                        JSONObject result = jsonArray.getJSONObject(i);
-                        String name = result.optString("name");
-                        boolean status = result.optBoolean("status");
-                        String code = result.optString("code");
-                        String time = result.optString("time");
-                        String empCode = result.optString("empCode");
-                        RemoteVideo remoteVideo = new RemoteVideo();
-                        remoteVideo.setTime(time);
-                        remoteVideo.setName(name);
-                        remoteVideo.setStatus(status);
-                        remoteVideo.setPersonId(empCode);
-                        remoteVideo.setId(code);
-                        remoteVideo.setEmpCode(empCode);
-                        remoteVideo.setType(RemoteVideo.TYPE_VOICE);
-                        videoList.add(remoteVideo);
+                    if(StringUtils.isNotEmpty(issueMsg)) {
+                        JSONObject issueObj = new JSONObject(issueMsg);
+                        if (issueObj.getBoolean("ret")) {
+                            JSONArray jsonArray = issueObj.getJSONArray("result");
+                            List<RemoteVideo> videoList = new ArrayList<>();
+                            for (int i = jsonArray.length() - 1; i >= 0; i--) {
+                                JSONObject result = jsonArray.getJSONObject(i);
+                                String name = result.optString("name");
+                                boolean status = result.optBoolean("status");
+                                String code = result.optString("code");
+                                String time = result.optString("time");
+                                String empCode = result.optString("empCode");
+                                RemoteVideo remoteVideo = new RemoteVideo();
+                                remoteVideo.setTime(time);
+                                remoteVideo.setName(name);
+                                remoteVideo.setStatus(status);
+                                remoteVideo.setPersonId(empCode);
+                                remoteVideo.setId(code);
+                                remoteVideo.setEmpCode(empCode);
+                                remoteVideo.setType(RemoteVideo.TYPE_VOICE);
+                                videoList.add(remoteVideo);
+                            }
+                            //利用Handler机制把信息回传给UI主线程
+                            Message msg = new Message();
+                            msg.what = MSG_TYPE_VIDEO_LIST;
+                            msg.obj = videoList;
+                            handler.sendMessage(msg);
+                        }
                     }
-                    //利用Handler机制把信息回传给UI主线程
-                    Message msg = new Message();
-                    msg.what = MSG_TYPE_VIDEO_LIST;
-                    msg.obj = videoList;
-                    handler.sendMessage(msg);
-                    // }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(this.getClass().getName(), "", e);
                 }
             }
         });
