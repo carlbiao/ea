@@ -108,8 +108,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp">
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp">
 
 
 
@@ -120,7 +120,7 @@
 
             <Button
                 android:id="@+id/btn_login"
-                android:layout_width="345dp"
+                android:layout_width="match_parent"
                 android:layout_height="42dp"
                 android:layout_marginTop="10dp"
                 android:background="#659BF9"

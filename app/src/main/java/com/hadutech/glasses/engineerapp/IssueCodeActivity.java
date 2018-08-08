@@ -38,8 +38,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     private static final String TAG = "IssueCodeActivity";
     private MediaPlayer mediaPlayer = null;
 
-
-    private Button play_music;
     //设置一个用户id，用于获取用户信息接口
     private String user_id;
     private String project_name;
@@ -56,8 +54,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
     private String detailType = "";
     private LinearLayout parent = null;
     private Boolean showLoadingDialog = false;
-
-
 
     private String code = "";
     private Boolean status;
@@ -110,12 +106,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     dutyName.setText(duty_name);
                     TextView orgName = (TextView)findViewById(R.id.tv_org_name);
                     orgName.setText(org_name);
-                    break;
-                case 3:
-                    //LoadingBar.cancel(parent);
-                    hideLoading();
-                    playButton.setVisibility(View.GONE);
-                    stopButton.setVisibility(View.VISIBLE);
                     break;
             }
         }
@@ -190,16 +180,11 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                         //解析json
                         JSONObject issueObj = new JSONObject(issueMsg);
                         JSONObject resMsg = issueObj.optJSONObject("result");
-                        String code = resMsg.optString("code");
-                        String project_no = resMsg.optString("project_no");
                         String veh_no = resMsg.optString("veh_no");
                         String part_no = resMsg.optString("part_no");
-                        String station_no = resMsg.optString("station_no");
                         String voice = resMsg.optString("voice");
                         String problems = resMsg.optString("problems");
-                        Boolean read_status = resMsg.optBoolean("read_status");
                         user_id = resMsg.optString("user_id");
-                        String from_user_id = resMsg.optString("from_user_id");
                         String project_name = resMsg.optString("project_name");
                         String station_name = resMsg.optString("station_name");
                         //利用handler将数据传出去
@@ -236,14 +221,8 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                         JSONObject issueObj = new JSONObject(issueMsg);
                         JSONObject resMsg = issueObj.optJSONObject("result");
                         resMsg = resMsg.optJSONObject("data");
-                        String code = resMsg.optString("code");
-                        String project_no = resMsg.optString("project_no");
                         String veh_no = resMsg.optString("vehNo");
                         String part_no = resMsg.optString("partNo");
-                        String station_no = resMsg.optString("station_no");
-                        //String voice = resMsg.optString("voice");
-                        //String problems = resMsg.optString("problems");
-
                         user_id = resMsg.optString("fromUserId");
                         String project_name = resMsg.optString("projectName");
                         String station_name = resMsg.optString("stationName");
@@ -304,10 +283,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         });
     }
 
-    //调用2.4接口,更新工程师读取留言问题记录状态
-    private void getIssueUpdate(){
-
-    }
     //播放音频的方法
     private void initMediaPlay(){
         try {
@@ -335,21 +310,33 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                 default:
         }
     }
-
-
-    private Runnable playMusicRunnable = new Runnable() {
+    private MediaPlayer.OnPreparedListener onPreparedListener = new MediaPlayer.OnPreparedListener() {
         @Override
-        public void run() {
-            mediaPlayer = new MediaPlayer();
-            initMediaPlay();
+        public void onPrepared(MediaPlayer mp) {
             mediaPlayer.start();
-
-            handler.sendEmptyMessage(3);
+            hideLoading();
+            playButton.setVisibility(View.GONE);
+            stopButton.setVisibility(View.VISIBLE);
         }
     };
 
-    private Thread playMusicThread = null;
-    private volatile boolean isPlaying = false;
+    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener(){
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            playButton.setVisibility(View.VISIBLE);
+            stopButton.setVisibility(View.GONE);
+            //mp.seekTo(0);
+        }
+    };
+
+    private MediaPlayer.OnSeekCompleteListener onSeekCompleteListener = new MediaPlayer.OnSeekCompleteListener(){
+        @Override
+        public void onSeekComplete(MediaPlayer mp) {
+            playButton.setVisibility(View.GONE);
+            stopButton.setVisibility(View.VISIBLE);
+            mp.start();
+        }
+    };
 
     //播放音频的点击事件
     @Override
@@ -359,27 +346,34 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         }
         int id = v.getId();
         if (id == R.id.btn_play_music) {
-
-
             if (ContextCompat.checkSelfPermission(IssueCodeActivity.this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                 ActivityCompat.requestPermissions(IssueCodeActivity.this,new String[]{
                         Manifest.permission.WRITE_EXTERNAL_STORAGE },1);
                 }else {
-                isPlaying = true;
                 if(mediaPlayer == null){
                     showLoading(ExLoadingFactory.TYPE_GET_VOICE);
-                    playMusicThread = new Thread(playMusicRunnable);
-                    playMusicThread.start();
+                    mediaPlayer = new MediaPlayer();
+                    mediaPlayer.setOnPreparedListener(onPreparedListener);
+                    mediaPlayer.setOnCompletionListener(onCompletionListener);
+                    mediaPlayer.setOnSeekCompleteListener(onSeekCompleteListener);
+                    try {
+                        mediaPlayer.setDataSource(this,Uri.parse(voice));//指定音频文件的路径
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    mediaPlayer.prepareAsync();
                 }else{
                     playButton.setVisibility(View.GONE);
                     stopButton.setVisibility(View.VISIBLE);
-                    mediaPlayer.reset();
-                    mediaPlayer.start();
+//                    mediaPlayer.
+                    mediaPlayer.seekTo(0);
+                    //mediaPlayer.start();
                 }
             }
         }else if (id == R.id.btn_stop_music) {
-            mediaPlayer.stop();
+            mediaPlayer.pause();
+            //mediaPlayer.seekTo(0);
             playButton.setVisibility(View.VISIBLE);
             stopButton.setVisibility(View.GONE);
         }
