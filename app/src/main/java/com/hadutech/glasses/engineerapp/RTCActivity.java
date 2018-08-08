@@ -4,18 +4,17 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.AudioManager;
-import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.opengl.GLSurfaceView;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -25,6 +24,7 @@ import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -43,14 +43,12 @@ import com.google.gson.JsonObject;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
 
 import com.hadutech.glasses.engineerapp.events.ScreenShotEvent;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -59,7 +57,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 
-public class RTCActivity extends Activity implements View.OnClickListener,View.OnTouchListener {
+public class RTCActivity extends Activity implements View.OnClickListener, View.OnTouchListener {
     boolean isVisible = false;
     private static final String TAG = "RTCActivity";
     private static final int SEEKBAR_VOLUME_MIN = 1;
@@ -73,7 +71,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     private SeekBar volumeSeekBar = null;
     private SeekBar zoomSeekbar = null;
     private Boolean isScreenShots = false;
-//    private FrameLayout maskLayout = null;
+    //    private FrameLayout maskLayout = null;
     private ScreenShotsView screenShotsView = null;
     private boolean isDrawPath = false;
     private RelativeLayout screenShotsContainer = null;
@@ -85,7 +83,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     private int actionDownStartY;
     private MediaStream remoteMediaStream;
     private MediaProjectionManager mMediaProjectionManager = null;
-    private Handler screenshotHandler = new Handler(){
+    private Handler screenshotHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             closeScreenshot();
@@ -111,28 +109,28 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 JSONObject jsonObject = (JSONObject) msg.obj;
                 Log.e("MainActivity", jsonObject.toString());
 
-            }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_ICECONNECTIONCHANGE){
+            } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_ICECONNECTIONCHANGE) {
                 //视频通话状态变更回调
                 onIceStatusChanged(String.valueOf(msg.obj));
-            }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_RECEIVE_MESSAGE){
+            } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_RECEIVE_MESSAGE) {
                 String content = String.valueOf(msg.obj);
                 JsonObject msgJson = new Gson().fromJson(content, JsonObject.class);
                 String messageType = msgJson.get("type").getAsString();
                 String message = msgJson.get("content").getAsString();
-                if(messageType.equals("base64")){
+                if (messageType.equals("base64")) {
 
-                    Log.e(TAG,message);
-                }else{
+                    Log.e(TAG, message);
+                } else {
                     //收到文本信息
-                    Log.e(TAG,message);
+                    Log.e(TAG, message);
                 }
-            }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_RECEIVE_REMOTE_VIDEO){
+            } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_RECEIVE_REMOTE_VIDEO) {
 //                maskLayout.setVisibility(View.GONE);
                 remoteMediaStream = (MediaStream) msg.obj;
 
                 VideoRenderer.Callbacks remoteRender = VideoRendererGuiCustom.create(0, 0, 100, 100, VideoRendererGuiCustom.ScalingType.SCALE_ASPECT_FILL, false);
                 remoteMediaStream.videoTracks.get(0).addRenderer(new VideoRenderer(remoteRender));
-            }else if(msg.what == RtcClient.RTC_MESSAGE_TYPE_CALL){
+            } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_CALL) {
             }
         }
     };
@@ -141,21 +139,22 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.e(RTCActivity.class.getName(),"onCreate");
+        Log.e(RTCActivity.class.getName(), "onCreate");
         //全屏显示
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         //显示屏常亮
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_rtc);
         initView();
         EventBus.getDefault().register(this);
         //检查权限
-        if(!checkPermissions()){
+        if (!checkPermissions()) {
 //            new AlertDialog.Builder(this)
 //                    .setTitle("权限不够")
 //                    .setMessage("请检查网络、摄像头和麦克风权限！")
 //                    .create().show();
-            ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
+            Log.w(RTCActivity.class.getName(), "没有获取到相关权限！！！");
             return;
         }
 
@@ -168,33 +167,33 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         bindEvent();
         RtcClient.getInstance().setRtcHandler(rtcHandler);
         //开始应答工程师端
-        RtcClient.getInstance().startCamera(RTCActivity.this,null,false,true,1280,720);
+        RtcClient.getInstance().startCamera(RTCActivity.this, null, false, true, 1280, 720);
         RtcClient.getInstance().startAnswer(remoteVideo);
 
 
     }
 
-   // private ScreenRecorder mRecorder = null;
+    // private ScreenRecorder mRecorder = null;
 
     //录屏核心代码
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         /**MediaProjection mediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, data);
-        if (mediaProjection == null) {
-            Log.e("@@", "media projection is null");
-            return;
-        }
-        // video size
-        final int width = 1280;
-        final int height = 720;
-        File file = new File(Environment.getExternalStorageDirectory(),
-                "record-" + width + "x" + height + "-" + System.currentTimeMillis() + ".mp4");
-        final int bitrate = 6000000;
-        mRecorder = new ScreenRecorder(width, height, bitrate, 1, mediaProjection, file.getAbsolutePath());
-        mRecorder.start();
-        mButton.setText("Stop Recorder");
-        Toast.makeText(this, "Screen recorder is running...", Toast.LENGTH_SHORT).show();
-        moveTaskToBack(true);**/
+         if (mediaProjection == null) {
+         Log.e("@@", "media projection is null");
+         return;
+         }
+         // video size
+         final int width = 1280;
+         final int height = 720;
+         File file = new File(Environment.getExternalStorageDirectory(),
+         "record-" + width + "x" + height + "-" + System.currentTimeMillis() + ".mp4");
+         final int bitrate = 6000000;
+         mRecorder = new ScreenRecorder(width, height, bitrate, 1, mediaProjection, file.getAbsolutePath());
+         mRecorder.start();
+         mButton.setText("Stop Recorder");
+         Toast.makeText(this, "Screen recorder is running...", Toast.LENGTH_SHORT).show();
+         moveTaskToBack(true);**/
     }
 
     /**
@@ -206,12 +205,13 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
         if (requestCode == MY_PERMISSION_REQUEST_CODE) {
             //检查权限
-            if(!checkPermissions()){
+            if (!checkPermissions()) {
 //            new AlertDialog.Builder(this)
 //                    .setTitle("权限不够")
 //                    .setMessage("请检查网络、摄像头和麦克风权限！")
 //                    .create().show();
-                ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
+                ActivityCompat.requestPermissions(RTCActivity.this, new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_NETWORK_STATE}, MY_PERMISSION_REQUEST_CODE);
+                Log.w(RTCActivity.class.getName(), "没有获取到相关权限！！！");
                 return;
             }
             Intent intent = getIntent();
@@ -222,7 +222,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
             bindEvent();
             RtcClient.getInstance().setRtcHandler(rtcHandler);
             //开始应答工程师端
-            RtcClient.getInstance().startCamera(RTCActivity.this,null,false,true,1280,720);
+            RtcClient.getInstance().startCamera(RTCActivity.this, null, false, true, 1280, 720);
             RtcClient.getInstance().startAnswer(remoteVideo);
         }
     }
@@ -230,11 +230,11 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     /**
      * 初始化组件相关
      */
-    private void initView(){
-        if(audiomanage == null){
-            audiomanage = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+    private void initView() {
+        if (audiomanage == null) {
+            audiomanage = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         }
-        toast = Toast.makeText(RTCActivity.this,"",Toast.LENGTH_SHORT);
+        toast = Toast.makeText(RTCActivity.this, "", Toast.LENGTH_SHORT);
         volumeSeekBar = findViewById(R.id.sb_rtc_volume);
         zoomSeekbar = findViewById(R.id.sb_rtc_zoom);
         remoteVideoView = (GLSurfaceView) findViewById(R.id.glsv_rtc);
@@ -258,7 +258,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         volumeSeekBar.setProgress(audiomanage.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
 
         getWindowManager().getDefaultDisplay().getSize(screenSize);
-        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(screenSize.x,screenSize.y);
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(screenSize.x, screenSize.y);
         remoteVideoView.setLayoutParams(layoutParams);
         parent = findViewById(R.id.fl_rtc_container);
     }
@@ -266,7 +266,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     /**
      * 绑定事件
      */
-    private void bindEvent(){
+    private void bindEvent() {
         Button button = (Button) findViewById(R.id.btn_rtc_detail);
         button.setOnClickListener(this);
 
@@ -279,13 +279,13 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         volumeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.e(TAG,"onProgressChanged:" + progress);
-                if(progress == 0){
-                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL,1,AudioManager.FLAG_PLAY_SOUND);
+                Log.e(TAG, "onProgressChanged:" + progress);
+                if (progress == 0) {
+                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 1, AudioManager.FLAG_PLAY_SOUND);
                     volumeSeekBar.setProgress(1);
-                }else{
+                } else {
                     //audiomanage.setStreamMute(AudioManager.STREAM_VOICE_CALL,false);
-                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL,progress,AudioManager.FLAG_PLAY_SOUND);
+                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, progress, AudioManager.FLAG_PLAY_SOUND);
                 }
 
             }
@@ -304,7 +304,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         zoomSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.e(TAG,"onProgressChanged" + String.valueOf(progress));
+                Log.e(TAG, "onProgressChanged" + String.valueOf(progress));
 
                 isZoom = (progress != 0);
                 zoomScale = progress + 1;
@@ -316,18 +316,15 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 params.height = zoomScale * screenSize.y;
                 params.width = zoomScale * screenSize.x;
 
-                int dTop = (zoomScale * screenSize.y - screenSize.y)/2;
-                int dLeft = (zoomScale * screenSize.x - screenSize.x)/2;
-                params.leftMargin = dLeft*(-1);
-                params.topMargin = dTop*(-1);
-
+                int dTop = (zoomScale * screenSize.y - screenSize.y) / 2;
+                int dLeft = (zoomScale * screenSize.x - screenSize.x) / 2;
+                params.leftMargin = dLeft * (-1);
+                params.topMargin = dTop * (-1);
 
 
                 remoteVideoView.setLayoutParams(params);
 
                 //remoteVideoView.layout(dLeft*(-1), dTop*(-1), dLeft*(-1) + params.width, dTop*(-1) + params.height);
-
-
 
 
             }
@@ -357,40 +354,38 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     }
 
 
-
-
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
-        Log.e(RTCActivity.class.getName(),"onStart");
+        Log.e(RTCActivity.class.getName(), "onStart");
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         RtcClient.getInstance().onResume();
         isVisible = true;
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
         RtcClient.getInstance().onPause();
         isVisible = false;
     }
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
-        Log.e(TAG,"onStop");
+        Log.e(TAG, "onStop");
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
-        Log.e(TAG,"onDestroy");
+        Log.e(TAG, "onDestroy");
         //RtcClient.getInstance().onDestroy();
-        if(remoteMediaStream != null){
+        if (remoteMediaStream != null) {
             remoteMediaStream.removeTrack(remoteMediaStream.audioTracks.get(0));
             remoteMediaStream.removeTrack(remoteMediaStream.videoTracks.get(0));
         }
@@ -398,17 +393,16 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         EventBus.getDefault().unregister(this);
     }
 
-    private void showLoading(int type){
+    private void showLoading(int type) {
         ExLoadingFactory factory = new ExLoadingFactory(type);
-        LoadingBar.make(parent,factory).show();
+        LoadingBar.make(parent, factory).show();
     }
-
 
 
     /**
      * 检查权限
      */
-    private boolean checkPermissions(){
+    private boolean checkPermissions() {
         return isAudioAvailable() && isWifiConnected();
 
     }
@@ -416,19 +410,20 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
     /**
      * 声音检测
+     *
      * @return
      */
-    private boolean isAudioAvailable(){
+    private boolean isAudioAvailable() {
         TextView videoStatusView = null;
         TextView audioStatusView = null;
         audioStatusView = (TextView) findViewById(R.id.tv_rtc_audio_status);
         videoStatusView = (TextView) findViewById(R.id.tv_rtc_video_status);
         boolean available = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
 
-        if(available){
+        if (available) {
             videoStatusView.setBackgroundResource(R.drawable.rtc_status_tv_ok);
             audioStatusView.setBackgroundResource(R.drawable.rtc_status_tv_ok);
-        }else{
+        } else {
             videoStatusView.setBackgroundResource(R.drawable.rtc_status_tv_false);
             audioStatusView.setBackgroundResource(R.drawable.rtc_status_tv_false);
         }
@@ -437,13 +432,14 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
     /**
      * 判断wifi是否可用
+     *
      * @return
      */
     private boolean isWifiConnected() {
         TextView wifiStatusView = null;
         wifiStatusView = (TextView) findViewById(R.id.tv_rtc_wifi_status);
         boolean available = false;
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_DENIED){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_DENIED) {
             wifiStatusView.setBackgroundResource(R.drawable.rtc_status_tv_false);
             return false;
         }
@@ -452,12 +448,18 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWiFiNetworkInfo = mConnectivityManager
                 .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        NetworkInfo mobileNetworkInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
         if (mWiFiNetworkInfo != null) {
-            available = mWiFiNetworkInfo.isAvailable();
+            available = (available || mWiFiNetworkInfo.isAvailable());
         }
-        if(available){
+        if (mobileNetworkInfo != null) {
+            available = (available || mobileNetworkInfo.isAvailable());
+        }
+
+        if (available) {
             wifiStatusView.setBackgroundResource(R.drawable.rtc_status_tv_ok);
-        }else{
+        } else {
             wifiStatusView.setBackgroundResource(R.drawable.rtc_status_tv_false);
         }
 
@@ -466,13 +468,13 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
     public void onIceStatusChanged(String newStatus) {
         if (newStatus.equals("CONNECTED")) {
-            Log.e(TAG,"通话连接成功");
+            Log.e(TAG, "通话连接成功");
         } else if (newStatus.equals("FAILED")) {
             //连接失败
-            Log.e(TAG,"通话连接失败");
+            Log.e(TAG, "通话连接失败");
         } else if (newStatus.equals("CLOSED")) {
             //Log.e(TAG,"通话结束");
-            Toast.makeText(RTCActivity.this,"视频已中断",Toast.LENGTH_SHORT).show();
+            Toast.makeText(RTCActivity.this, "视频已中断", Toast.LENGTH_SHORT).show();
             RtcClient.getInstance().hungup();
             finish();
         } else if (newStatus.equals("CHECKING")) {
@@ -482,7 +484,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     }
 
 
-    private void startScreenShort(){
+    private void startScreenShort() {
         showLoading(ExLoadingFactory.TYPE_SCREEN_SHOT);
         //Log.e(TAG,"top:" + remoteVideoView.getTop() + "   left:" + remoteVideoView.getLeft());
 //        ;
@@ -494,7 +496,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         remoteVideoView.getLocalVisibleRect(rect);
         //VideoRendererGuiCustom.takePic(rect.left,rect.top*(-1));
         //TODO 需要解决缩放以后的截图问题
-        VideoRendererGuiCustom.takePic(0,0);
+        VideoRendererGuiCustom.takePic(0, 0);
         //VideoRendererGuiCustom.takePic(rect.left,remoteVideoView.getHeight() - rect.bottom);
         //Log.e(TAG,"isisj");
 
@@ -502,11 +504,11 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
     //接收截图事件
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void userEventBus(ScreenShotEvent event){
+    public void userEventBus(ScreenShotEvent event) {
         LoadingBar.cancel(parent);
         //启动接听列表Activity
         Bitmap bitmap = event.getBitmap();
-        Log.e(TAG,"Get ScreenShot");
+        Log.e(TAG, "Get ScreenShot");
 
         isScreenShots = true;
         remoteVideoView.setVisibility(View.GONE);
@@ -517,7 +519,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 //        screenShotsView.invalidate();
     }
 
-    private void closeScreenshot(){
+    private void closeScreenshot() {
         remoteVideoView.setVisibility(View.VISIBLE);
         screenShotsContainer.setVisibility(View.GONE);
         isScreenShots = false;
@@ -525,9 +527,9 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
     @Override
     public void onBackPressed() {
-        if(isScreenShots){
+        if (isScreenShots) {
             closeScreenshot();
-        }else{
+        } else {
             RtcClient.getInstance().hungup();
             super.onBackPressed();
         }
@@ -535,25 +537,27 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 
 
     }
+
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btn_rtc_hangup:
+                showStopVideoDialog();
                 //Log.e(TAG,"挂断");
-                RtcClient.getInstance().hungup();
-                finish();
+//                RtcClient.getInstance().hungup();
+//                finish();
                 break;
             case R.id.btn_rtc_detail:
                 //Log.e(TAG,"详情");
-                Log.e(TAG,"详情：" + remoteVideo.getId());
-                Intent intent = new Intent(RTCActivity.this,IssueCodeActivity.class);
-                intent.putExtra("code",remoteVideo.getId());
-                intent.putExtra("detailType","calling");
-                intent.putExtra("readStatus",true);
+                Log.e(TAG, "详情：" + remoteVideo.getId());
+                Intent intent = new Intent(RTCActivity.this, IssueCodeActivity.class);
+                intent.putExtra("code", remoteVideo.getId());
+                intent.putExtra("detailType", "calling");
+                intent.putExtra("readStatus", true);
                 startActivity(intent);
                 break;
             case R.id.img_rtc_screenshorts:
-                Log.e(TAG,"截图");
+                Log.e(TAG, "截图");
                 startScreenShort();
                 break;
             case R.id.img_rtc_cancle:
@@ -569,13 +573,13 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         }
     }
 
-    private void processDrawAction(boolean flag){
+    private void processDrawAction(boolean flag) {
         isDrawPath = flag;
         screenShotsView.setDraw(isDrawPath);
         ImageView drawPathImage = findViewById(R.id.img_rtc_drawpath);
-        if(isDrawPath){
+        if (isDrawPath) {
             drawPathImage.setBackgroundResource(R.drawable.img_drawpath_shape);
-        }else{
+        } else {
             drawPathImage.setBackgroundResource(0);
         }
     }
@@ -596,12 +600,12 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                         params.put("ref_code", remoteVideo.getId());
                         params.put("message", imageContent);
                         params.put("message_type", 2);
-                        HttpUtil.doPost(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/im/save",params,new Callback() {
+                        HttpUtil.doPost(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/im/save", params, new Callback() {
 
 
                             @Override
                             public void onFailure(Call call, IOException e) {
-                                Log.e(TAG,"invoke 2.12 远程指导即时通信发送消息失败");
+                                Log.e(TAG, "invoke 2.12 远程指导即时通信发送消息失败");
 
                             }
 
@@ -611,15 +615,14 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
                                 try {
                                     //解析json
                                     JSONObject statusObj = new JSONObject(statusMsg);
-                                    JSONObject resMsg=statusObj.optJSONObject("result");
-                                    boolean status=resMsg.optBoolean("status");
-                                    if((Boolean) statusObj.get("ret") && (Boolean) resMsg.get("status")){
-                                        Log.e(TAG,"save image message ok!");
+                                    JSONObject resMsg = statusObj.optJSONObject("result");
+                                    boolean status = resMsg.optBoolean("status");
+                                    if ((Boolean) statusObj.get("ret") && (Boolean) resMsg.get("status")) {
+                                        Log.e(TAG, "save image message ok!");
+                                    } else {
+                                        Log.e(TAG, resMsg.getString("msg"));
                                     }
-                                    else{
-                                        Log.e(TAG,resMsg.getString("msg"));
-                                    }
-                                }catch (Exception e){
+                                } catch (Exception e) {
                                     e.printStackTrace();
                                 }
                             }
@@ -629,14 +632,13 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
     }
 
 
-
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if(!isZoom){
+        if (!isZoom) {
             return true;
         }
-        if(v.getId() == R.id.glsv_rtc){
-            switch (event.getAction()){
+        if (v.getId() == R.id.glsv_rtc) {
+            switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:// 获取手指第一次接触屏幕
                     actionDownStartX = (int) event.getRawX();
                     actionDownStartY = (int) event.getRawY();
@@ -651,7 +653,7 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
 //                    remoteVideoView.setLayoutParams(layoutParams);
 
 //
-                    Log.e(TAG,"startX,startY: " + String.valueOf(actionDownStartX)+" , "+String.valueOf(actionDownStartY));
+                    Log.e(TAG, "startX,startY: " + String.valueOf(actionDownStartX) + " , " + String.valueOf(actionDownStartY));
 //                    Log.e(TAG,"left,right,top,bottom: " + String.valueOf(l)+" , "+String.valueOf(r) + " , " + String.valueOf(t) + " , " + String.valueOf(b));
                     break;
                 case MotionEvent.ACTION_MOVE:// 手指在屏幕上移动对应的事件
@@ -695,52 +697,84 @@ public class RTCActivity extends Activity implements View.OnClickListener,View.O
         return true;
     }
 
-    private void checkOffset(){
+    private void checkOffset() {
         // 得到imageView最开始的各顶点的坐标
         int l = remoteVideoView.getLeft();
         int r = remoteVideoView.getRight();
         int t = remoteVideoView.getTop();
         int b = remoteVideoView.getBottom();
-        Log.e(TAG,"left,right,top,bottom: " + String.valueOf(l)+" , "+String.valueOf(r) + " , " + String.valueOf(t) + " , " + String.valueOf(b));
+        Log.e(TAG, "left,right,top,bottom: " + String.valueOf(l) + " , " + String.valueOf(r) + " , " + String.valueOf(t) + " , " + String.valueOf(b));
 
-        int dTop = (zoomScale * remoteVideoView.getHeight() - remoteVideoView.getHeight())/2;
-        int dLeft = (zoomScale * remoteVideoView.getWidth() - remoteVideoView.getWidth())/2;
-
+        int dTop = (zoomScale * remoteVideoView.getHeight() - remoteVideoView.getHeight()) / 2;
+        int dLeft = (zoomScale * remoteVideoView.getWidth() - remoteVideoView.getWidth()) / 2;
 
 
         boolean needReLayout = false;//是否越界了需要修正
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) remoteVideoView.getLayoutParams();
 
-        if(t > 0){
+        if (t > 0) {
             needReLayout = true;
-            Log.e(TAG,"上面越界！");
+            Log.e(TAG, "上面越界！");
             layoutParams.topMargin = 0;
             //layoutParams.
 
             //Log.e(TAG,"dTop,dLeft: " + String.valueOf(dTop)+" , "+String.valueOf(dLeft));
             //Log.e(TAG,"left,right,top,bottom: " + String.valueOf(l)+" , "+String.valueOf(r) + " , " + String.valueOf(t) + " , " + String.valueOf(b));
         }
-        if(b < screenSize.y){
+        if (b < screenSize.y) {
             needReLayout = true;
-            Log.e(TAG,"下面越界！");
-            layoutParams.topMargin = (remoteVideoView.getHeight() - screenSize.y)*(-1);
+            Log.e(TAG, "下面越界！");
+            layoutParams.topMargin = (remoteVideoView.getHeight() - screenSize.y) * (-1);
             //Log.e(TAG,"dTop,dLeft: " + String.valueOf(dTop)+" , "+String.valueOf(dLeft));
             //Log.e(TAG,"left,right,top,bottom: " + String.valueOf(l)+" , "+String.valueOf(r) + " , " + String.valueOf(t) + " , " + String.valueOf(b));
         }
-        if(l > 0){
-            Log.e(TAG,"左面越界！");
+        if (l > 0) {
+            Log.e(TAG, "左面越界！");
             needReLayout = true;
             layoutParams.leftMargin = 0;
 //            l = dLeft;
 //            r = r-(l-dLeft);
         }
-        if((l*(-1)) > (remoteVideoView.getWidth()-screenSize.x)){
+        if ((l * (-1)) > (remoteVideoView.getWidth() - screenSize.x)) {
             needReLayout = true;
-            Log.e(TAG,"右面越界！");
-            layoutParams.leftMargin = (remoteVideoView.getWidth()-screenSize.x)*(-1);
+            Log.e(TAG, "右面越界！");
+            layoutParams.leftMargin = (remoteVideoView.getWidth() - screenSize.x) * (-1);
         }
-        if(needReLayout){
+        if (needReLayout) {
             remoteVideoView.setLayoutParams(layoutParams);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // 提示是否结束通话
+            showStopVideoDialog();
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    // 弹出框提示是否挂断通话
+    private void showStopVideoDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Log.e(TAG,"挂断");
+                RtcClient.getInstance().hungup();
+                finish();
+            }
+        });
+        dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        dialog.setMessage("是否结束视频通话");
+        dialog.setTitle("提示");
+        dialog.show();
     }
 }

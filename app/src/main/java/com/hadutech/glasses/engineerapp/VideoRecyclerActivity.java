@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.hadutech.glasses.engineerapp.events.AppEvent;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -41,7 +42,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     private static final String TAG = "VideoRecyclerActivity";
     private static final int MSG_TYPE_VIDEO_LIST = 1;
     private static final int MSG_TYPE_ANSWER_TIMEOUT = 2;
-    private static final int  MSG_TYPE_REQUEST_VIDEO_LIST = 3;
+    private static final int MSG_TYPE_REQUEST_VIDEO_LIST = 3;
 
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
@@ -54,11 +55,10 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     TimerTask timerTask = null;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e(TAG,"onCreate");
+        Log.e(TAG, "onCreate");
         setContentView(R.layout.activity_video_recycler);
         //1、UI初始化
         recyclerView = (RecyclerView) findViewById(R.id.rv_video_list);
@@ -70,8 +70,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         recyclerView.setAdapter(adapter);
 
         //在视图中设立的标题
-        new TitleBuilder(this).setTitleText("远程视频列表").setIv_right(R.drawable.ic_end).setRightIcoListening(rightReturnListener);
-
+        new TitleBuilder(this).setTitleText("远程视频列表").setIv_right(R.drawable.ic_end).setRightIcoListening(new AppEvent.Logout(this));
 
 
         //2、2.9 获取留言问题记录
@@ -79,7 +78,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         startRequestLoop();
     }
 
-    private void startRequestLoop(){
+    private void startRequestLoop() {
         timer = new Timer();
         timerTask = new TimerTask() {
             @Override
@@ -89,18 +88,18 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
                 handler.sendMessage(message);
             }
         };
-        timer.schedule(timerTask,3000,3000);
+        timer.schedule(timerTask, 3000, 3000);
     }
 
-    private void stopRequestLoop(){
+    private void stopRequestLoop() {
         timerTask.cancel();
         timer = null;
         timerTask = null;
     }
 
     @Override
-    protected void onNewIntent(Intent intent){
-        Log.e(TAG,"onNewIntent");
+    protected void onNewIntent(Intent intent) {
+        Log.e(TAG, "onNewIntent");
 
 
         String name = intent.getStringExtra("name");
@@ -109,8 +108,8 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         String code = intent.getStringExtra("code");
 
 
-        if(!TextUtils.isEmpty(name) && !TextUtils.isEmpty(personId) && !TextUtils.isEmpty(remoteSocketId)){
-            appendCall(personId,name,remoteSocketId,code,null);
+        if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(personId) && !TextUtils.isEmpty(remoteSocketId)) {
+            appendCall(personId, name, remoteSocketId, code, null);
             //超过指定时间未应答则主动挂断
             answernTimeout = new Timer();
 
@@ -123,17 +122,17 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
                     handler.sendMessage(msg);
                 }
             };
-            answernTimeout.schedule(task,ConfigData.ANSWER_TIMEOUT);
+            answernTimeout.schedule(task, ConfigData.ANSWER_TIMEOUT);
         }
-
 
 
     }
 
     //调用问题留言的接口
     private void getGuidanceIssue() {
-        Log.e(TAG,"getGuidanceIssue");
-        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=2018-06-07 23:59:59", new Callback() {
+        Log.e(TAG, "getGuidanceIssue");
+        String endDateStr = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 00:00:00";
+        HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=" + endDateStr, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
 
@@ -209,15 +208,15 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     @Override
     public void onViewItemClick(RemoteVideo item) {
-        Intent intent = new Intent(VideoRecyclerActivity.this,IssueCodeActivity.class);
-        intent.putExtra("code",item.getId());
-        intent.putExtra("readStatus",item.isStatus());
-        intent.putExtra("detailType","issue");
+        Intent intent = new Intent(VideoRecyclerActivity.this, IssueCodeActivity.class);
+        intent.putExtra("code", item.getId());
+        intent.putExtra("readStatus", item.isStatus());
+        intent.putExtra("detailType", "issue");
 
         startActivity(intent);
         int index = list.indexOf(item);
         item.setStatus(true);
-        adapter.updateItem(index,item);
+        adapter.updateItem(index, item);
     }
 
     @Override
@@ -226,7 +225,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         answernTimeout.cancel();
         answernTimeout = null;
         //打开视频窗口
-        Intent intent = new Intent(VideoRecyclerActivity.this,RTCActivity.class);
+        Intent intent = new Intent(VideoRecyclerActivity.this, RTCActivity.class);
         Bundle bundle = item.toBundle();
         intent.putExtras(bundle);
         startActivity(intent);
@@ -242,28 +241,28 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     }
 
     //点击标题栏图片返回到登录界面
-   private View.OnClickListener rightReturnListener=new View.OnClickListener() {
-       @Override
-       public void onClick(View v) {
-           EventBus.getDefault().post(new AppEvent(AppEvent.EVENT_TYPE_LOGOUT));
-           finish();
-       }
-   };
+/*    private View.OnClickListener rightReturnListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            EventBus.getDefault().post(new AppEvent(AppEvent.EVENT_TYPE_LOGOUT));
+            finish();
+        }
+    };*/
 
-    private void appendCall(String personId,String name,String streamId,String code,String dateString){
+    private void appendCall(String personId, String name, String streamId, String code, String dateString) {
         RemoteVideo item = new RemoteVideo();
         //item.setId(personId);
         item.setPersonId(personId);
         item.setName(name);
         item.setId(code);
-        if(dateString == null){
-            item.setTime((String) DateFormat.format("yyyy-MM-dd HH:mm:ss",new Date()));
-        }else{
+        if (dateString == null) {
+            item.setTime((String) DateFormat.format("yyyy-MM-dd HH:mm:ss", new Date()));
+        } else {
             item.setTime(dateString);
         }
         item.setType(RemoteVideo.TYPE_RTC);
         item.setRemoteSocketId(streamId);
-        adapter.addItem(0,item);
+        adapter.addItem(0, item);
         recyclerView.scrollToPosition(0);
         startAlarm();
     }
@@ -273,12 +272,12 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
      */
     private void startAlarm() {
         //TODO 处理IllegalStateException异常
-        if(audiomanage == null){
-            audiomanage = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        if (audiomanage == null) {
+            audiomanage = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         }
         audiomanage.setSpeakerphoneOn(true);
         //audiomanage.setSpeakerphoneOn(false);
-        if(mediaPlayer == null){
+        if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer.create(this, getSystemDefultRingtoneUri());
             mediaPlayer.setLooping(true);
         }
@@ -286,15 +285,15 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
             mediaPlayer.prepare();
         } catch (IllegalStateException e) {
 //            e.printStackTrace();
-            Log.e(TAG,"startAlarm IllegalStateException");
+            Log.e(TAG, "startAlarm IllegalStateException");
         } catch (IOException e) {
 //            e.printStackTrace();
         }
         mediaPlayer.start();
     }
 
-    private void stopAlarm(){
-        if(mediaPlayer != null && mediaPlayer.isPlaying()){
+    private void stopAlarm() {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
         }
         mediaPlayer = null;
@@ -306,7 +305,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         stopRequestLoop();
     }

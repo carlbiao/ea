@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    signingConfigs {
-        config {
-            keyAlias 'key0'
-            keyPassword 'pwd123456'
-            storeFile file('E:/03_work/source/glasses/engineerApp.jks')
-            storePassword 'pwd123456'
-        }
-    }
+//    signingConfigs {
+//        config {
+//            keyAlias 'key0'
+//            keyPassword 'pwd123456'
+//            storeFile file('E:/03_work/source/glasses/engineerApp.jks')
+//            storePassword 'pwd123456'
+//        }
+//    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "glasses.hadutech.com.engineerapp"
@@ -27,9 +27,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:26.0.2'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:appcompat-v7:26.0.2'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -45,4 +45,5 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:latest.integration'
     implementation 'org.greenrobot:eventbus:3.1.1'
     implementation 'com.dyhdyh.loadingbar:loadingbar:1.4.4'
+    implementation 'org.apache.commons:commons-lang3:3.4'
 }
