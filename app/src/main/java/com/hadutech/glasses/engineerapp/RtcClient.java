@@ -374,7 +374,7 @@ public class RtcClient {
                     } else if (messageType.equals("refuse")) {
                         //拒绝通话
                         rtcHandler.sendEmptyMessage(RTC_MESSAGE_TYPE_REFUSE);
-                    }else if (messageType.equals("hungup")) {
+                    } else if (messageType.equals("hungup")) {
                         //TODO 接收到对方挂断消息，主动关闭peer
                         if (videoSource != null) {
                             videoSource.stop();
@@ -386,7 +386,7 @@ public class RtcClient {
                         }
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "", e);
                 }
             }
         };
@@ -599,7 +599,7 @@ public class RtcClient {
                 try {
                     sendMessage(remoteSocketId,"hungup",null);
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "", e);
                 }
                 onCalling = false;
             }

@@ -132,7 +132,6 @@ public class ScreenShotsView extends View {
         super.draw(canvas);
         if(bitmap != null){
             canvas.drawBitmap(bitmap,0,0,null);
-            Log.e(TAG,"Draw bitmap");
         }
         drawPaths(canvas);
     }

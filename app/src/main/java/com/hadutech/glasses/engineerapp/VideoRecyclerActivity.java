@@ -59,7 +59,6 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e(TAG, "onCreate");
         setContentView(R.layout.activity_video_recycler);
         //1、UI初始化
         recyclerView = (RecyclerView) findViewById(R.id.rv_video_list);
@@ -100,9 +99,6 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Log.e(TAG, "onNewIntent");
-
-
         String name = intent.getStringExtra("name");
         String personId = intent.getStringExtra("personId");
         final String remoteSocketId = intent.getStringExtra("remoteSocketId");
@@ -131,7 +127,6 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     //调用问题留言的接口
     private void getGuidanceIssue() {
-        Log.e(TAG, "getGuidanceIssue");
         String endDateStr = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 00:00:00";
         HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=" + endDateStr, new Callback() {
             @Override
@@ -287,7 +282,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
             mediaPlayer.prepare();
         } catch (IllegalStateException e) {
 //            e.printStackTrace();
-            Log.e(TAG, "startAlarm IllegalStateException");
+            Log.e(TAG, "startAlarm IllegalStateException", e);
         } catch (IOException e) {
 //            e.printStackTrace();
         }

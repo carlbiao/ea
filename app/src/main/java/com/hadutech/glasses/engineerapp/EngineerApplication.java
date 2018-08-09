@@ -23,7 +23,6 @@ public class EngineerApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG, "onCreate");
         EventBus.getDefault().register(this);
     }
 
@@ -63,7 +62,6 @@ public class EngineerApplication extends Application {
     public void userEventBus(AppEvent event) {
         switch (event.getType()) {
             case AppEvent.EVENT_TYPE_LOGOUT:
-                Log.e(TAG,"log out");
                 SharedPreferences.Editor editor = getSharedPreferences(ConfigData.SHARE_PREFERENCES_PREFIX, MODE_PRIVATE).edit();
                 editor.clear();
                 editor.commit();

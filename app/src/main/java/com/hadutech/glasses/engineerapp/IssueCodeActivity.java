@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.dyhdyh.widget.loading.bar.LoadingBar;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -65,7 +66,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                 case 1:
                     //接收接口传来的数据
                     project_name = msg.getData().getString("project_name");
-                    Log.d(TAG, "handleMessage:"+project_name);
                     veh_no = msg.getData().getString("veh_no");
                     part_no = msg.getData().getString("part_no");
                     station_name = msg.getData().getString("station_name");
@@ -81,12 +81,12 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     partNum.setText(part_no);
                     TextView stationName = (TextView)findViewById(R.id.tv_station_num);
                     stationName.setText(station_name);
-                    TextView userId = (TextView)findViewById(R.id.tv_user_id);
-                    userId.setText(user_id);
+//                    TextView userId = (TextView)findViewById(R.id.tv_user_id);
+//                    userId.setText(user_id);
                     TextView problem = (TextView)findViewById(R.id.tv_problems);
                     problem.setText(problems);
                     Button playMusicButton = findViewById(R.id.btn_play_music);
-                    if(voice.equals("")){
+                    if(StringUtils.isEmpty(voice)){
                         playMusicButton.setBackgroundResource(R.drawable.btn_play_music_shape_disable);
                         playMusicButton.setEnabled(false);
                     }else{
@@ -106,6 +106,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     dutyName.setText(duty_name);
                     TextView orgName = (TextView)findViewById(R.id.tv_org_name);
                     orgName.setText(org_name);
+                    ((TextView)findViewById(R.id.tv_user_id)).setText(msg.getData().getString("login_name"));
                     break;
             }
         }
@@ -202,7 +203,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                         handler.sendMessage(msg);
                         getUserId();
                     }catch (Exception e){
-                        e.printStackTrace();
+                        Log.e(TAG, "", e);
                     }
                 }
             });
@@ -210,12 +211,12 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
             HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/im/code/get?code=" + code, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
+                    Log.e(TAG, "", e);
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String issueMsg = response.body().string();
-                    Log.d(TAG, "onResponse:"+issueMsg);
                     try {
                         //解析json
                         JSONObject issueObj = new JSONObject(issueMsg);
@@ -224,6 +225,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                         String veh_no = resMsg.optString("vehNo");
                         String part_no = resMsg.optString("partNo");
                         user_id = resMsg.optString("fromUserId");
+                        String from_login_name = resMsg.optString("fromLoginName");
                         String project_name = resMsg.optString("projectName");
                         String station_name = resMsg.optString("stationName");
                         //利用handler将数据传出去
@@ -235,13 +237,14 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                         bundle.putString("part_no",part_no);
                         bundle.putString("station_name",station_name);
                         bundle.putString("fromUserId",user_id);
+                        bundle.putString("from_login_name",from_login_name);
                         bundle.putString("problems",problems);
                         bundle.putString("voice",voice);
                         msg.setData(bundle);
                         handler.sendMessage(msg);
                         getUserId();
                     }catch (Exception e){
-                        e.printStackTrace();
+                        Log.e(TAG, "", e);
                     }
                 }
             });
@@ -255,6 +258,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/user/userid?user_id="+user_id, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "", e);
             }
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -266,6 +270,7 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     String name = resMsg.optString("name");
                     String duty_name = resMsg.optString("duty_name");
                     String org_name = resMsg.optString("org_name");
+                    String login_name = resMsg.optString("login_name");
                     //利用handler将数据传出去
                     Message msg = new Message();
                     msg.what = 2;
@@ -273,10 +278,11 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     bundle.putString("name",name);
                     bundle.putString("duty_name",duty_name);
                     bundle.putString("org_name",org_name);
+                    bundle.putString("login_name",login_name);
                     msg.setData(bundle);
                     handler.sendMessage(msg);
                 }catch (Exception e){
-                    e.printStackTrace();
+                    Log.e(TAG, "", e);
                 }
                 return;
             }
@@ -290,7 +296,6 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
             mediaPlayer.setDataSource(this,Uri.parse(voice));//指定音频文件的路径
             mediaPlayer.prepare();//让MediaPlayer进入到准备状态
             Long end = System.currentTimeMillis();
-            Log.e(TAG,"播放：" + (end-start) + "ms");
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -117,10 +117,8 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                 String message = msgJson.get("content").getAsString();
                 if (messageType.equals("base64")) {
 
-                    Log.e(TAG, message);
                 } else {
                     //收到文本信息
-                    Log.e(TAG, message);
                 }
             } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_RECEIVE_REMOTE_VIDEO) {
 //                maskLayout.setVisibility(View.GONE);
@@ -137,7 +135,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.e(RTCActivity.class.getName(), "onCreate");
         //全屏显示
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         //显示屏常亮
@@ -244,14 +241,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         //TODO 实际使用免提true
         audiomanage.setSpeakerphoneOn(false);//使用免提
 
-//        Log.e(TAG,"audio Mode:" + audiomanage.getMode());
-//        Log.e(TAG,"isSpeakerphoneOn:" + audiomanage.isSpeakerphoneOn());
-        //Log.e(TAG,"STREAM_ACCESSIBILITY:" + audiomanage.getStreamVolume(AudioManager.STREAM_ACCESSIBILITY));
-//        Log.e(TAG,"STREAM_ALARM:" + audiomanage.getStreamVolume(AudioManager.STREAM_ALARM));
-//        Log.e(TAG,"STREAM_DTMF:" + audiomanage.getStreamVolume(AudioManager.STREAM_DTMF));
-//        Log.e(TAG,"STREAM_MUSIC:" + audiomanage.getStreamVolume(AudioManager.STREAM_MUSIC));
-//        Log.e(TAG,"STREAM_VOICE_CALL:" + audiomanage.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
-//        Log.e(TAG,"STREAM_VOICE_CALL_MAX:" + audiomanage.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
         volumeSeekBar.setMax(audiomanage.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
         volumeSeekBar.setProgress(audiomanage.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
 
@@ -277,7 +266,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         volumeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.e(TAG, "onProgressChanged:" + progress);
                 if (progress == 0) {
                     audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 1, AudioManager.FLAG_PLAY_SOUND);
                     volumeSeekBar.setProgress(1);
@@ -302,8 +290,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         zoomSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.e(TAG, "onProgressChanged" + String.valueOf(progress));
-
                 isZoom = (progress != 0);
                 zoomScale = progress + 1;
 //                remoteVideoView.setScaleX(zoomScale);
@@ -355,7 +341,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
     @Override
     protected void onStart() {
         super.onStart();
-        Log.e(RTCActivity.class.getName(), "onStart");
     }
 
     @Override
@@ -375,13 +360,11 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
     @Override
     protected void onStop() {
         super.onStop();
-        Log.e(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.e(TAG, "onDestroy");
         //RtcClient.getInstance().onDestroy();
         if (remoteMediaStream != null) {
             remoteMediaStream.removeTrack(remoteMediaStream.audioTracks.get(0));
@@ -466,12 +449,9 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
 
     public void onIceStatusChanged(String newStatus) {
         if (newStatus.equals("CONNECTED")) {
-            Log.e(TAG, "通话连接成功");
         } else if (newStatus.equals("FAILED")) {
             //连接失败
-            Log.e(TAG, "通话连接失败");
         } else if (newStatus.equals("CLOSED")) {
-            //Log.e(TAG,"通话结束");
             Toast.makeText(RTCActivity.this, "视频已中断", Toast.LENGTH_SHORT).show();
             RtcClient.getInstance().hungup();
             finish();
@@ -484,8 +464,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
 
     private void startScreenShort() {
         showLoading(ExLoadingFactory.TYPE_SCREEN_SHOT);
-        //Log.e(TAG,"top:" + remoteVideoView.getTop() + "   left:" + remoteVideoView.getLeft());
-//        ;
         int[] location = new int[2];
         int[] location2 = new int[2];
         remoteVideoView.getLocationOnScreen(location);
@@ -506,7 +484,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         LoadingBar.cancel(parent);
         //启动接听列表Activity
         Bitmap bitmap = event.getBitmap();
-        Log.e(TAG, "Get ScreenShot");
 
         isScreenShots = true;
         remoteVideoView.setVisibility(View.GONE);
@@ -554,7 +531,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                 startActivity(intent);
                 break;
             case R.id.img_rtc_screenshorts:
-                Log.e(TAG, "截图");
                 startScreenShort();
                 break;
             case R.id.img_rtc_cancle:
@@ -615,9 +591,9 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                                     JSONObject resMsg = statusObj.optJSONObject("result");
                                     boolean status = resMsg.optBoolean("status");
                                     if ((Boolean) statusObj.get("ret") && (Boolean) resMsg.get("status")) {
-                                        Log.e(TAG, "save image message ok!");
+
                                     } else {
-                                        Log.e(TAG, resMsg.getString("msg"));
+
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -648,10 +624,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
 //                    layoutParams.height = orignHeight*scale;
 //                    layoutParams.width = orignWidth*scale;
 //                    remoteVideoView.setLayoutParams(layoutParams);
-
-//
-                    Log.e(TAG, "startX,startY: " + String.valueOf(actionDownStartX) + " , " + String.valueOf(actionDownStartY));
-//                    Log.e(TAG,"left,right,top,bottom: " + String.valueOf(l)+" , "+String.valueOf(r) + " , " + String.valueOf(t) + " , " + String.valueOf(b));
                     break;
                 case MotionEvent.ACTION_MOVE:// 手指在屏幕上移动对应的事件
                     int x = (int) event.getRawX();
@@ -659,9 +631,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                     // 获取手指移动的距离
                     int dx = x - actionDownStartX;
                     int dy = y - actionDownStartY;
-
-                    //Log.e(TAG,"moveX,moveY: " + String.valueOf(x)+" , "+String.valueOf(y));
-                    //Log.e(TAG,"dx,dy: " + String.valueOf(dx)+" , "+String.valueOf(dy));
 
                     // 得到imageView最开始的各顶点的坐标
                     int l = remoteVideoView.getLeft();
@@ -700,7 +669,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         int r = remoteVideoView.getRight();
         int t = remoteVideoView.getTop();
         int b = remoteVideoView.getBottom();
-        Log.e(TAG, "left,right,top,bottom: " + String.valueOf(l) + " , " + String.valueOf(r) + " , " + String.valueOf(t) + " , " + String.valueOf(b));
 
         int dTop = (zoomScale * remoteVideoView.getHeight() - remoteVideoView.getHeight()) / 2;
         int dLeft = (zoomScale * remoteVideoView.getWidth() - remoteVideoView.getWidth()) / 2;
