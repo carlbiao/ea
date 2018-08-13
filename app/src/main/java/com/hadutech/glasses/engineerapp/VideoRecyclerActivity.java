@@ -70,7 +70,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         recyclerView.setAdapter(adapter);
 
         //在视图中设立的标题
-        new TitleBuilder(this).setTitleText("远程视频列表").setIv_right(R.drawable.ic_end).setRightIcoListening(new AppEvent.Logout(this));
+        new TitleBuilder(this).setTitleText("远程视频列表").setIv_right(R.mipmap.icon_end).setRightIcoListening(new AppEvent.Logout(this));
 
 
         //2、2.9 获取留言问题记录

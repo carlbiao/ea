@@ -302,7 +302,8 @@ public class RtcClient {
      */
     private class MessageHandler {
 
-        private MessageHandler() {
+        private
+        MessageHandler() {
 
         }
 
@@ -813,8 +814,6 @@ public class RtcClient {
                 payload.put("sdp", sdp.description);
                 jsonObject.put("payload", payload);
                 pc.setLocalDescription(this, sdp);
-                Log.e(TAG, "create Offer complete!");
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
