@@ -13,5 +13,5 @@ public class ConfigData {
     /**
      * 收到呼叫请求应答的时间，超过该时间还未应答，则自动挂断
      */
-    public static final int ANSWER_TIMEOUT = 30*1000;
+    public static final int ANSWER_TIMEOUT = 30 * 1000;
 }

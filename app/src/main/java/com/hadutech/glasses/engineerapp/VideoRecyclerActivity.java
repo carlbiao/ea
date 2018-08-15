@@ -6,23 +6,22 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import com.hadutech.glasses.engineerapp.events.AppEvent;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -40,10 +39,12 @@ import okhttp3.Response;
 
 public class VideoRecyclerActivity extends AppCompatActivity implements VideoRecyclerAdapter.OnItemClickListener {
 
-    private static final String TAG = "VideoRecyclerActivity";
+    private static final String TAG = VideoRecyclerActivity.class.getName();
     private static final int MSG_TYPE_VIDEO_LIST = 1;
     private static final int MSG_TYPE_ANSWER_TIMEOUT = 2;
     private static final int MSG_TYPE_REQUEST_VIDEO_LIST = 3;
+
+    private static final int REQUEST_CODE_ASK_WRITE_SETTINGS = 10;
 
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
@@ -72,11 +73,29 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         //在视图中设立的标题
         new TitleBuilder(this).setTitleText("远程视频列表").setIv_right(R.mipmap.icon_end).setRightIcoListening(new AppEvent.Logout(this));
 
-
         //2、2.9 获取留言问题记录
         getGuidanceIssue();
         startRequestLoop();
+
+/*        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.System.canWrite(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                        Uri.parse("package:" + getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivityForResult(intent, REQUEST_CODE_ASK_WRITE_SETTINGS);
+            } else {
+                Log.i(TAG, "我有权限！！！！");
+            }
+        }*/
     }
+
+/*    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (RESULT_OK == resultCode) {
+            Log.i(TAG, "OK");
+        }
+    }*/
 
     private void startRequestLoop() {
         timer = new Timer();
@@ -92,7 +111,15 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     }
 
     private void stopRequestLoop() {
-        timerTask.cancel();
+        Log.w(TAG, "Stop GuidanceIssue request loop task!!!");
+        if (timerTask != null) {
+            timerTask.cancel();
+        }
+
+        if (timer != null) {
+            timer.cancel();
+        }
+
         timer = null;
         timerTask = null;
     }
@@ -121,8 +148,6 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
             };
             answernTimeout.schedule(task, ConfigData.ANSWER_TIMEOUT);
         }
-
-
     }
 
     //调用问题留言的接口
@@ -131,7 +156,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=" + endDateStr, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-
+                Log.e(TAG, "getGuidanceIssue failed!!!", e);
             }
 
             @Override
@@ -139,7 +164,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
                 String issueMsg = response.body().string();
                 Log.i(this.getClass().getName(), "Http request to get issue list complete, result = " + issueMsg);
                 try {
-                    if(StringUtils.isNotEmpty(issueMsg)) {
+                    if (StringUtils.isNotEmpty(issueMsg)) {
                         JSONObject issueObj = new JSONObject(issueMsg);
                         if (issueObj.getBoolean("ret")) {
                             JSONArray jsonArray = issueObj.getJSONArray("result");
@@ -169,7 +194,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
                         }
                     }
                 } catch (Exception e) {
-                    Log.e(this.getClass().getName(), "", e);
+                    Log.e(TAG, "", e);
                 }
             }
         });
@@ -268,24 +293,18 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
      * 响铃
      */
     private void startAlarm() {
-        //TODO 处理IllegalStateException异常
         if (audiomanage == null) {
             audiomanage = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         }
         audiomanage.setSpeakerphoneOn(true);
         //audiomanage.setSpeakerphoneOn(false);
+
         if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(this, getSystemDefultRingtoneUri());
+//            mediaPlayer = MediaPlayer.create(this, getSystemDefultRingtoneUri());
+            mediaPlayer = MediaPlayer.create(this, R.raw.ring);
             mediaPlayer.setLooping(true);
         }
-        try {
-            mediaPlayer.prepare();
-        } catch (IllegalStateException e) {
-//            e.printStackTrace();
-            Log.e(TAG, "startAlarm IllegalStateException", e);
-        } catch (IOException e) {
-//            e.printStackTrace();
-        }
+
         mediaPlayer.start();
     }
 
@@ -306,6 +325,5 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         super.onDestroy();
         stopRequestLoop();
     }
-
 
 }

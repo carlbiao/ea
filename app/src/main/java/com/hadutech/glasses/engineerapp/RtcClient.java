@@ -32,7 +32,6 @@ import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
 import java.net.URISyntaxException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -180,7 +179,6 @@ public class RtcClient {
             this.personId = personId;
             this.rtcType = type;
 
-
             MessageHandler messageHandler = new MessageHandler();
 
             rtcClient.on("id", messageHandler.onId);
@@ -189,14 +187,12 @@ public class RtcClient {
             rtcClient.on("disconnect", messageHandler.serverError);
             rtcClient.on("error", messageHandler.error);
             rtcClient.connect();
-
-
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            Log.e(TAG, "", e);
         } catch (KeyManagementException e) {
-            e.printStackTrace();
+            Log.e(TAG, "", e);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Log.e(TAG, "", e);
         }
     }
 
@@ -208,8 +204,8 @@ public class RtcClient {
      * TODO 需要测试
      * 关闭所有连接，只能在注销/应用程序销毁时调用
      */
-    public void close(){
-        if(socketConnected){
+    public void close() {
+        if (socketConnected) {
             rtcClient.close();
             if (this.videoSource != null) {
                 this.videoSource.stop();
@@ -230,7 +226,7 @@ public class RtcClient {
      * TODO 需要测试
      * 挂断
      */
-    public void hungup(){
+    public void hungup() {
         //localMediaStream.dispose();
         if (this.videoSource != null) {
 
@@ -256,7 +252,6 @@ public class RtcClient {
     public void sendImageToPeer(String imageContent) {
         Long msgNum = System.currentTimeMillis();//使用时间戳作为消息编号
         if (this.peer != null && this.peer.pc != null) {
-            StringBuffer s = new StringBuffer(imageContent);
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("type", "base64");
             jsonObject.addProperty("content", imageContent);
@@ -264,7 +259,6 @@ public class RtcClient {
 
             String sendContent = gson.toJson(jsonObject);
             StringBuilder stringBuilder = new StringBuilder(sendContent);
-            Log.e(TAG, sendContent);
             int MAX_TRUNK = 30000;
             int packageNum = (int) Math.ceil(sendContent.length() / MAX_TRUNK) + 1;
             for (int i = 0; i < packageNum; i++) {
@@ -279,8 +273,6 @@ public class RtcClient {
                 sendJsonObject.addProperty("total", packageNum);
                 sendJsonObject.addProperty("content", tmpContent);
                 sendJsonObject.addProperty("index", i);
-
-                byte[] byteArray = tmpContent.getBytes();
 
                 DataChannel.Buffer buffer = new DataChannel.Buffer(ByteBuffer.wrap(gson.toJson(sendJsonObject).getBytes()), false);
                 this.peer.dataChannel.send(buffer);
@@ -302,8 +294,7 @@ public class RtcClient {
      */
     private class MessageHandler {
 
-        private
-        MessageHandler() {
+        private MessageHandler() {
 
         }
 
@@ -314,12 +305,11 @@ public class RtcClient {
             @Override
             public void call(Object... args) {
                 JSONObject data = (JSONObject) args[0];
-                Log.e(TAG, data.toString());
+                Log.i(TAG, "Receive single server message, message = " + data.toString());
                 try {
                     String messageType = data.getString("type");
                     if (messageType.equals("joinComplete")) {
                         rtcHandler.sendEmptyMessage(RTC_MESSAGE_TYPE_JOIN_COMPLETE);
-
                     } else if (messageType.equals("leave")) {
                         rtcHandler.sendEmptyMessage(RTC_MESSAGE_TYPE_LEAVE);
                     } else if (messageType.equals("onlineEngineerList")) {
@@ -400,16 +390,18 @@ public class RtcClient {
             public void call(Object... args) {
                 socketConnected = true;
                 String id = (String) args[0];
-                Log.e(TAG, "socket connect");
-                Log.e(TAG, id);
+                Log.i(TAG, "Connect to the single server, id = " + id);
+
                 JSONObject message = new JSONObject();
                 try {
                     message.put("personId", personId);
                     message.put("name", name);
                     message.put("type", rtcType);
+                    Log.i(TAG, "Send join message to single server, message " + message.toString());
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "", e);
                 }
+
                 rtcClient.emit("join", message);
             }
         };
@@ -596,15 +588,15 @@ public class RtcClient {
             if (state.equals("DISCONNECTED")) {
                 state = "CLOSED";
             }
-            if(state.equals("CLOSED")){
+            if (state.equals("CLOSED")) {
                 try {
-                    sendMessage(remoteSocketId,"hungup",null);
+                    sendMessage(remoteSocketId, "hungup", null);
                 } catch (JSONException e) {
                     Log.e(TAG, "", e);
                 }
                 onCalling = false;
             }
-            if(state.equals("COMPLETED")){
+            if (state.equals("COMPLETED")) {
                 onCalling = true;
             }
             Message msg = new Message();
