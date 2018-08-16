@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hadutech.glasses.engineerapp.events.RtcEvent;
@@ -60,6 +61,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
 
                     //自定义了Toast
                     View view = LayoutInflater.from(LoginActivity.this).inflate(R.layout.toast_view, null);
+                    ((TextView) view.findViewById(R.id.tvToastContent)).setText(msg.obj.toString());
                     new ToastUtil(LoginActivity.this, view, Toast.LENGTH_SHORT).show();
             }
         }
@@ -135,7 +137,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         postParams.put("p", password);
 
         //调用登录接口
-        HttpUtil.doPost(ConfigData.REST_SERVICE_BASE_URL + "/login", postParams, new Callback() {
+        HttpUtil.doPost(ConfigData.REST_SERVICE_BASE_URL + "/login/engineer", postParams, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 Message msg = new Message();
@@ -147,20 +149,19 @@ public class LoginActivity extends Activity implements View.OnClickListener {
             public void onResponse(Call call, Response response) throws IOException {
                 //将返回的json字符串赋值给resultBody
                 String resultBody = response.body().string();
+                Log.d(TAG, "Request for " + response.request().url().toString() + ", result = " + resultBody);
                 try {
                     //使用JSONObject解析登录之后得到的json字符串
                     JSONObject obj = new JSONObject(resultBody);
-                    Log.d(TAG, "" + obj);
                     JSONObject res = obj.getJSONObject("result");
                     Boolean status = res.getBoolean("status");
-                    Log.d(TAG, "status:" + status);
                     if (status) {
                         //调用获取员工信息接口
                         getMessage();
                     } else {
-                        codeMsg = res.getString("msg");
                         Message msg = new Message();
                         msg.what = 3;
+                        msg.obj = res.getString("msg");
                         handler.sendMessage(msg);
                         name = "";
                         password = "";
