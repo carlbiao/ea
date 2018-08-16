@@ -9,3 +9,6 @@
 /captures
 .externalNativeBuild
 .idea/*
+
+app/build/
+app/release/
