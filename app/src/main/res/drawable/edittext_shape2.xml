@@ -8,7 +8,7 @@
         <!-- 填充的颜色 -->
         <solid android:color="#F8F8F8 " />
 
-        <stroke android:color="#FF7070"
+        <stroke android:color="#f070bcff"
             android:width="1dp"/>
 
         <!-- 设置按钮的四个角为弧形 -->

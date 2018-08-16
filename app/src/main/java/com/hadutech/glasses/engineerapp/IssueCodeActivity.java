@@ -2,6 +2,7 @@ package com.hadutech.glasses.engineerapp;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -128,7 +129,9 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         if(detailType.equals("issue") == false){
             findViewById(R.id.rl_issue_voice).setVisibility(View.GONE);
             findViewById(R.id.rl_issue_voice_split_line).setVisibility(View.GONE);
-
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
         playButton = (Button)findViewById(R.id.btn_play_music);
         playButton.setOnClickListener(this);
