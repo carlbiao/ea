@@ -83,8 +83,12 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
                     stationName.setText(station_name);
 //                    TextView userId = (TextView)findViewById(R.id.tv_user_id);
 //                    userId.setText(user_id);
-                    TextView problem = (TextView)findViewById(R.id.tv_problems);
-                    problem.setText(problems);
+                    if(StringUtils.isNotEmpty(problems)) {
+                        com.alibaba.fastjson.JSONObject proJson = com.alibaba.fastjson.JSONObject.parseObject(problems);
+                        TextView problem = (TextView)findViewById(R.id.tv_problems);
+                        problem.setText(proJson.getString("menu") + "\n" + proJson.getString("detail"));
+                    }
+
                     Button playMusicButton = findViewById(R.id.btn_play_music);
                     if(StringUtils.isEmpty(voice)){
                         playMusicButton.setBackgroundResource(R.drawable.btn_play_music_shape_disable);

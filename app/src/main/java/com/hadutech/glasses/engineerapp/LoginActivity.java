@@ -38,11 +38,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     private Button forgetPwdButton = null;
     private View cleanView = null;
 
-
-    //定义调用接口返回的信息
-    String codeMsg = null;
-    int engCode = 0;
-    String engMsg = null;
     //定义用户名，密码
     private String name = "";
     private String password = "";
@@ -191,8 +186,8 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                 try {
                     //使用JSONObject解析员工信息
                     JSONObject msgObj = new JSONObject(engMessige);
-                    engCode = msgObj.optInt("code");
-                    engMsg = msgObj.optString("msg");
+                    int engCode = msgObj.optInt("code");
+                    String engMsg = msgObj.optString("msg");
                     JSONObject resMsg = msgObj.optJSONObject("result");
                     String user = resMsg.optString("a");
                     String tellphone = resMsg.optString("te");
@@ -207,7 +202,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                         //获取登录时的系统时间
                         long time = System.currentTimeMillis() / 1000;
                         int loginTime = new Long(time).intValue();
-                        Log.d(TAG, "onResponse:" + loginTime);
                         //使用SharedPreference将员工信息保存起来
                         SharedPreferences.Editor editor = getSharedPreferences(ConfigData.SHARE_PREFERENCES_PREFIX, MODE_PRIVATE).edit();
                         editor.putString("user", user);

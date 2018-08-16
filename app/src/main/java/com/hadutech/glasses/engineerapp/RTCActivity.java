@@ -111,6 +111,7 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                 //视频通话状态变更回调
                 onIceStatusChanged(String.valueOf(msg.obj));
             } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_RECEIVE_MESSAGE) {
+                Log.i(TAG, "Receive message from remote point, msg = " + msg.toString());
                 String content = String.valueOf(msg.obj);
                 JsonObject msgJson = new Gson().fromJson(content, JsonObject.class);
                 String messageType = msgJson.get("type").getAsString();

@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -574,7 +575,7 @@ public class RtcClient {
         private PeerConnection pc;
         private DataChannel dataChannel;
         private String remoteSocketId;
-        private Map<String, StringBuilder> receivedMsgMap = new HashMap<>();
+        private Map<String, StringBuilder> receivedMsgMap = new ConcurrentHashMap<>();
 
         @Override
         public void onSignalingChange(PeerConnection.SignalingState signalingState) {

@@ -152,7 +152,7 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
 
     //调用问题留言的接口
     private void getGuidanceIssue() {
-        String endDateStr = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 00:00:00";
+        String endDateStr = DateFormatUtils.format(new Date(), "yyyy-MM-dd") + " 23:59:59";
         HttpUtil.doGet(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/issue/list/time?start_time=2018-03-01 00:00:00&end_time=" + endDateStr, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
