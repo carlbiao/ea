@@ -258,18 +258,8 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
     public void onHangupClick(RemoteVideo item) {
         stopAlarm();
         RtcClient.getInstance().refuse(item.getRemoteSocketId());
-
         adapter.removeItemBySocketId(item.getRemoteSocketId());
     }
-
-    //点击标题栏图片返回到登录界面
-/*    private View.OnClickListener rightReturnListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            EventBus.getDefault().post(new AppEvent(AppEvent.EVENT_TYPE_LOGOUT));
-            finish();
-        }
-    };*/
 
     private void appendCall(String personId, String name, String streamId, String code, String dateString) {
         RemoteVideo item = new RemoteVideo();
@@ -300,7 +290,6 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
         //audiomanage.setSpeakerphoneOn(false);
 
         if (mediaPlayer == null) {
-//            mediaPlayer = MediaPlayer.create(this, getSystemDefultRingtoneUri());
             mediaPlayer = MediaPlayer.create(this, R.raw.ring);
             mediaPlayer.setLooping(true);
         }
@@ -313,11 +302,6 @@ public class VideoRecyclerActivity extends AppCompatActivity implements VideoRec
             mediaPlayer.stop();
         }
         mediaPlayer = null;
-    }
-
-    private Uri getSystemDefultRingtoneUri() {
-        return RingtoneManager.getActualDefaultRingtoneUri(this,
-                RingtoneManager.TYPE_RINGTONE);
     }
 
     @Override

@@ -17,9 +17,6 @@ import org.greenrobot.eventbus.ThreadMode;
 public class EngineerApplication extends Application {
     private static final String TAG = "EngineerApplication";
 
-    //声明变量：用户登录时的系统时间
-    private long loginTime;
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -77,4 +74,6 @@ public class EngineerApplication extends Application {
                 break;
         }
     }
+
+
 }
