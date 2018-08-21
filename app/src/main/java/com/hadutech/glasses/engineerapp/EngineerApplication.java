@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hadutech.glasses.engineerapp.events.AppEvent;
 import com.hadutech.glasses.engineerapp.events.RtcEvent;
 
@@ -16,6 +17,19 @@ import org.greenrobot.eventbus.ThreadMode;
 
 public class EngineerApplication extends Application {
     private static final String TAG = "EngineerApplication";
+
+    /**
+     * 当前登录用户JSON格式信息
+     */
+    private JSONObject userJson;
+
+    public JSONObject getUserJson() {
+        return userJson;
+    }
+
+    public void setUserJson(JSONObject userJson) {
+        this.userJson = userJson;
+    }
 
     @Override
     public void onCreate() {
@@ -74,6 +88,4 @@ public class EngineerApplication extends Application {
                 break;
         }
     }
-
-
 }

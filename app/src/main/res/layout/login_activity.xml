@@ -63,7 +63,8 @@
                     android:hint="请输入您的工号"
                     android:singleLine="true"
                     android:drawableLeft="@drawable/ic_identity_normal"
-                    android:background="@drawable/all_edittext"/>
+                    android:background="@drawable/all_edittext"
+                    android:textCursorDrawable="@drawable/edit_cursor_color"/>
 
                 <View android:id="@+id/v_login_clear"
                     android:layout_width="20dp"
@@ -86,7 +87,8 @@
                 android:hint="请输入密码"
                 android:inputType="textPassword"
                 android:drawableLeft="@drawable/ic_password_normal"
-                android:background="@drawable/all_edittext" />
+                android:background="@drawable/all_edittext"
+                android:textCursorDrawable="@drawable/edit_cursor_color"/>
 
         </LinearLayout>
     </LinearLayout>

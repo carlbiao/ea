@@ -38,7 +38,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +111,7 @@ public class RtcClient {
     /**
      * 视频通信中
      */
-    private boolean onCalling = false;
+    private volatile boolean onCalling = false;
 
     //private RtcListener rtcListener = null;
     private MediaStream localMediaStream = null;//本地媒体流
@@ -329,7 +328,7 @@ public class RtcClient {
                         JSONObject streamData = data.getJSONObject("stream");
                         //收到员工的call
                         if (onCalling) {
-                            sendMessage(String.valueOf(data.get("streamId")), "refuse", null);
+                            sendMessage(String.valueOf(streamData.get("streamId")), "refuse", null);
                             return;
                         }
                         onCalling = true;
@@ -425,9 +424,7 @@ public class RtcClient {
         private Emitter.Listener error = new Emitter.Listener() {
             @Override
             public void call(Object... args) {
-
                 Log.e(TAG, "error!" + args[0]);
-
             }
         };
     }
@@ -484,10 +481,11 @@ public class RtcClient {
     public void refuse(String remoteSocketId) {
         try {
             sendMessage(remoteSocketId, "refuse", null);
-            onCalling = false;
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "", e);
         }
+
+        onCalling = false;
     }
 
     //--------------------处理信令服务器相关逻辑结束-------------------------------------
@@ -595,6 +593,7 @@ public class RtcClient {
                 } catch (JSONException e) {
                     Log.e(TAG, "", e);
                 }
+
                 onCalling = false;
             }
             if (state.equals("COMPLETED")) {
@@ -604,8 +603,6 @@ public class RtcClient {
             msg.what = RTC_MESSAGE_TYPE_ICECONNECTIONCHANGE;
             msg.obj = state;
             rtcHandler.sendMessage(msg);
-
-            //}
         }
 
         @Override
@@ -626,7 +623,7 @@ public class RtcClient {
                 payload.put("candidate", candidate.sdp);
                 sendMessage(remoteSocketId, "candidate", payload);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e(TAG, "", e);
             }
         }
 
@@ -746,10 +743,9 @@ public class RtcClient {
                 payload.put("type", sdp.type.canonicalForm());
                 payload.put("sdp", sdp.description);
                 isSetLocal = true;
-                Log.e(TAG, "set Local SDP......");
                 pc.setLocalDescription(this, sdp);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e(TAG, "", e);
             }
         }
 
@@ -759,14 +755,13 @@ public class RtcClient {
             //设置本地则不需要答复了，
             if (isSetLocal == false) {
                 //创建答复
-                Log.e(TAG, "set Remote SDP complete!");
                 peer.pc.createAnswer(this, pcConstraints);
             } else {
                 Log.e(TAG, "set Local SDP complete!");
                 try {
                     sendMessage(this.remoteId, "answer", payload);
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "", e);
                 }
             }
         }
@@ -808,17 +803,16 @@ public class RtcClient {
                 jsonObject.put("payload", payload);
                 pc.setLocalDescription(this, sdp);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e(TAG, "", e);
             }
         }
 
         @Override
         public void onSetSuccess() {
-            Log.e(TAG, "set Local DSP complete!");
             try {
                 sendMessage(this.remoteId, "offer", payload);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e(TAG, "", e);
             }
         }
 

@@ -20,10 +20,10 @@ public class LogoActivity {
     //构造方法：用于获取对象
     public LogoActivity(Activity context) {
         logoView = context.findViewById(R.id.logo_bar);
-        logoBar = (RelativeLayout) logoView.findViewById(R.id.logo_bar);
-        ib_left = (ImageView) logoView.findViewById(R.id.ib_left);
-        ib_right = (ImageView) logoView.findViewById(R.id.ib_right);
-        msg_title = (TextView) logoView.findViewById(R.id.msg_title);
+        logoBar = logoView.findViewById(R.id.logo_bar);
+        ib_left = logoView.findViewById(R.id.ib_left);
+        ib_right = logoView.findViewById(R.id.ib_right);
+        msg_title = logoView.findViewById(R.id.msg_title);
     }
 
     //用于设置标题栏左边要显示的按钮

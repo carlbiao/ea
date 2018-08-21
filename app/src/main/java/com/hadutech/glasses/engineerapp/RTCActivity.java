@@ -15,13 +15,13 @@ import android.media.projection.MediaProjectionManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.opengl.GLSurfaceView;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -39,6 +39,7 @@ import android.widget.Toast;
 import com.dyhdyh.widget.loading.bar.LoadingBar;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.hadutech.glasses.engineerapp.events.ScreenShotEvent;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -46,8 +47,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONObject;
 import org.webrtc.MediaStream;
 import org.webrtc.VideoRenderer;
-
-import com.hadutech.glasses.engineerapp.events.ScreenShotEvent;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -228,7 +227,7 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
      */
     private void initView() {
         if (audiomanage == null) {
-            audiomanage = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+            audiomanage = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         }
         toast = Toast.makeText(RTCActivity.this, "", Toast.LENGTH_SHORT);
         volumeSeekBar = findViewById(R.id.sb_rtc_volume);
@@ -240,7 +239,7 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         screenShotsContainer = findViewById(R.id.rl_rtc_imagecut);
 
         //TODO 实际使用免提true
-        audiomanage.setSpeakerphoneOn(false);//使用免提
+        audiomanage.setSpeakerphoneOn(true);//使用免提
 
         volumeSeekBar.setMax(audiomanage.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
         volumeSeekBar.setProgress(audiomanage.getStreamVolume(AudioManager.STREAM_VOICE_CALL));
@@ -267,14 +266,21 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         volumeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                if (progress == 0) {
+//                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 1, AudioManager.FLAG_PLAY_SOUND);
+//                    volumeSeekBar.setProgress(1);
+//                } else {
+//                    //audiomanage.setStreamMute(AudioManager.STREAM_VOICE_CALL,false);
+//                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, progress, AudioManager.FLAG_PLAY_SOUND);
+//                }
+
+                int tmpProcess = progress;
                 if (progress == 0) {
-                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 1, AudioManager.FLAG_PLAY_SOUND);
-                    volumeSeekBar.setProgress(1);
-                } else {
-                    //audiomanage.setStreamMute(AudioManager.STREAM_VOICE_CALL,false);
-                    audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, progress, AudioManager.FLAG_PLAY_SOUND);
+                    tmpProcess = 1;
                 }
 
+                volumeSeekBar.setProgress(tmpProcess);
+                audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, tmpProcess, AudioManager.FLAG_PLAY_SOUND);
             }
 
             @Override
@@ -528,7 +534,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                 Intent intent = new Intent(RTCActivity.this, IssueCodeActivity.class);
                 intent.putExtra("code", remoteVideo.getId());
                 intent.putExtra("detailType", "calling");
-                intent.putExtra("readStatus", true);
                 startActivity(intent);
                 break;
             case R.id.img_rtc_screenshorts:

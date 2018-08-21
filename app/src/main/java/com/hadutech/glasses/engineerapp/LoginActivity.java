@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.hadutech.glasses.engineerapp.events.RtcEvent;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONObject;
 
@@ -186,17 +187,16 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                 try {
                     //使用JSONObject解析员工信息
                     JSONObject msgObj = new JSONObject(engMessige);
-                    int engCode = msgObj.optInt("code");
                     String engMsg = msgObj.optString("msg");
-                    JSONObject resMsg = msgObj.optJSONObject("result");
-                    String user = resMsg.optString("a");
-                    String tellphone = resMsg.optString("te");
-                    String email = resMsg.optString("e");
-                    String phone = resMsg.optString("ph");
-                    String ID = resMsg.optString("i");
-                    String engineerName = resMsg.optString("rn");
-                    String name = resMsg.optString("n");
-                    Boolean status = resMsg.optBoolean("status");
+                    JSONObject resultJson = msgObj.optJSONObject("result");
+                    String userId = resultJson.optString("a");
+                    String telephone = resultJson.optString("te", StringUtils.EMPTY);
+                    String email = resultJson.optString("e", StringUtils.EMPTY);
+                    String phone = resultJson.optString("ph", StringUtils.EMPTY);
+                    String idNum = resultJson.optString("i", StringUtils.EMPTY);
+                    String engineerName = resultJson.optString("rn");
+                    String name = resultJson.optString("n");
+                    Boolean status = resultJson.optBoolean("status");
                     //判断是否获取员工信息，如果获取则将信息保存
                     if (status != false) {
                         //获取登录时的系统时间
@@ -204,23 +204,29 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                         int loginTime = new Long(time).intValue();
                         //使用SharedPreference将员工信息保存起来
                         SharedPreferences.Editor editor = getSharedPreferences(ConfigData.SHARE_PREFERENCES_PREFIX, MODE_PRIVATE).edit();
-                        editor.putString("user", user);
-                        editor.putString("tellphone", tellphone);
-                        editor.putString("email", email);
-                        editor.putString("phone", phone);
-                        editor.putString("ID", ID);
-                        editor.putString("engineerName", engineerName);
                         editor.putString("name", name);
-                        editor.putBoolean("status", status);
+                        editor.putString("password", password);
                         //将获取的时间保存起来
                         editor.putInt("time", loginTime);
-                        editor.putString("password", password);
                         editor.apply();
+
+                        // 缓存用户信息
+                        com.alibaba.fastjson.JSONObject cacheJson = new com.alibaba.fastjson.JSONObject();
+                        cacheJson.put("user_id", userId);
+                        cacheJson.put("tele_phone", telephone);
+                        cacheJson.put("email", email);
+                        cacheJson.put("phone", phone);
+                        cacheJson.put("id_num", idNum);
+                        cacheJson.put("name", engineerName);
+                        cacheJson.put("login_name", name);
+                        ((EngineerApplication) getApplication()).setUserJson(cacheJson);
                     }
+
                     RtcEvent event = new RtcEvent(RtcEvent.EVENT_TYPE_WILL_CONNECT_SOCKET);
                     event.setName(engineerName);
                     event.setPersonId(name);
                     EventBus.getDefault().post(event);
+
                     Intent intent = new Intent(LoginActivity.this, VideoRecyclerActivity.class);
                     startActivity(intent);
                     finish();
