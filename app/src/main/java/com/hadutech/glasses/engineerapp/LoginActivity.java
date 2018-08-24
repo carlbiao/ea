@@ -161,7 +161,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
                         handler.sendMessage(msg);
                         name = "";
                         password = "";
-                        return;
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Login failed!!!", e);

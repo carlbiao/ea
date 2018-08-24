@@ -164,8 +164,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         //开始应答工程师端
         RtcClient.getInstance().startCamera(RTCActivity.this, null, false, true, 1280, 720);
         RtcClient.getInstance().startAnswer(remoteVideo);
-
-
     }
 
     // private ScreenRecorder mRecorder = null;
@@ -275,9 +273,9 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
 //                }
 
                 int tmpProcess = progress;
-                if (progress == 0) {
-                    tmpProcess = 1;
-                }
+//                if (progress == 0) {
+//                    tmpProcess = 1;
+//                }
 
                 volumeSeekBar.setProgress(tmpProcess);
                 audiomanage.setStreamVolume(AudioManager.STREAM_VOICE_CALL, tmpProcess, AudioManager.FLAG_PLAY_SOUND);
@@ -392,7 +390,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
      */
     private boolean checkPermissions() {
         return isAudioAvailable() && isWifiConnected();
-
     }
 
 
@@ -525,16 +522,14 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         switch (v.getId()) {
             case R.id.btn_rtc_hangup:
                 showStopVideoDialog();
-                //Log.e(TAG,"挂断");
-//                RtcClient.getInstance().hungup();
-//                finish();
                 break;
             case R.id.btn_rtc_detail:
-                //Log.e(TAG,"详情");
                 Intent intent = new Intent(RTCActivity.this, IssueCodeActivity.class);
                 intent.putExtra("code", remoteVideo.getId());
                 intent.putExtra("detailType", "calling");
                 startActivity(intent);
+//                Log.i(TAG, "send msg: 1234567890");
+//                RtcClient.getInstance().sendImageToPeer("1234567890");
                 break;
             case R.id.img_rtc_screenshorts:
                 startScreenShort();

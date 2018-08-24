@@ -215,7 +215,7 @@ public class RtcClient {
 //            }
             if (this.peer != null) {
                 this.peer.pc.close();
-                this.peer.dataChannel.dispose();
+                this.peer.localDataChannel.dispose();
                 this.peer = null;
             }
         }
@@ -243,8 +243,8 @@ public class RtcClient {
         if (this.peer != null) {
             this.peer.pc.close();
             //this.peer.pc.dispose();
-            //this.peer.dataChannel.dispose();
-            this.peer.dataChannel.close();
+            //this.peer.localDataChannel.dispose();
+            this.peer.localDataChannel.close();
             this.peer = null;
         }
     }
@@ -255,7 +255,6 @@ public class RtcClient {
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("type", "base64");
             jsonObject.addProperty("content", imageContent);
-
 
             String sendContent = gson.toJson(jsonObject);
             StringBuilder stringBuilder = new StringBuilder(sendContent);
@@ -275,17 +274,8 @@ public class RtcClient {
                 sendJsonObject.addProperty("index", i);
 
                 DataChannel.Buffer buffer = new DataChannel.Buffer(ByteBuffer.wrap(gson.toJson(sendJsonObject).getBytes()), false);
-                this.peer.dataChannel.send(buffer);
+                this.peer.remoteDataChannel.send(buffer);
             }
-            //Gson gson = new Gson();
-//            gson.
-//            var sendContent = JSON.stringify({
-//                    type: type,
-//                    content: content
-//            });
-            //byte[] byteArray = imageContent.getBytes();
-//            DataChannel.Buffer buffer = new DataChannel.Buffer(ByteBuffer.wrap(imageContent.getBytes()),false);
-//            this.peer.dataChannel.send(buffer);
         }
     }
 
@@ -319,12 +309,14 @@ public class RtcClient {
                         message.what = RTC_MESSAGE_TYPE_ONLINE_ENGINEER_LIST;
                         rtcHandler.sendMessage(message);
                     } else if (messageType.equals("callAnswer")) {
+                        Log.i(TAG, "收到 callAnswer");
                         //呼叫后，工程师那边接听答复，创建offer
                         String remoteId = data.getString("from");
                         peer = new Peer(remoteId);
                         localSdpObserver = new LocalPeerSdpObserver(remoteId, peer.pc);
                         peer.pc.createOffer(localSdpObserver, pcConstraints);
                     } else if (messageType.equals("call")) {
+                        Log.i(TAG, "收到 call");
                         JSONObject streamData = data.getJSONObject("stream");
                         //收到员工的call
                         if (onCalling) {
@@ -337,16 +329,25 @@ public class RtcClient {
                         event.setName(String.valueOf(streamData.get("name")));
                         event.setPersonId(String.valueOf(streamData.get("personId")));
                         event.setRemoteSocketId(String.valueOf(streamData.get("streamId")));
-                        String code = "";
-
-                        if (data.has("code")) {
-                            code = String.valueOf(data.get("code"));
-                        }
+                        String code = String.valueOf(data.get("code"));
                         event.setId(code);
                         EventBus.getDefault().post(event);
                     } else if (messageType.equals("offer")) {
+                        Log.i(TAG, "收到 offer");
                         //收到offer
-                        onOffer((String) data.get("from"), data.getJSONObject("payload"));
+                        String remoteSocketId = (String) data.get("from");
+                        JSONObject payload = data.getJSONObject("payload");
+
+                        peer = new Peer(remoteSocketId);
+                        SessionDescription sdp = null;
+                        try {
+                            sdp = new SessionDescription(SessionDescription.Type.OFFER, payload.getString("sdp"));
+                        } catch (JSONException e) {
+                            Log.e(TAG, "", e);
+                        }
+                        RemotePeerSdpObserver sdpObserver = new RemotePeerSdpObserver(remoteSocketId, peer.pc);
+                        //先设置远端的sdp对象
+                        peer.pc.setRemoteDescription(sdpObserver, sdp);
                     } else if (messageType.equals("answer")) {
                         //呼叫后，工程师那边接听答复
                         SessionDescription sdp = new SessionDescription(
@@ -358,7 +359,6 @@ public class RtcClient {
                         String sdpMid = data.getJSONObject("payload").getString("id");
                         int sdpMLineIndex = data.getJSONObject("payload").getInt("label");
                         String sdp = data.getJSONObject("payload").getString("candidate");
-                        ;
                         IceCandidate iceCandidate = new IceCandidate(sdpMid, sdpMLineIndex, sdp);
 
                         peer.pc.addIceCandidate(iceCandidate);
@@ -372,7 +372,7 @@ public class RtcClient {
                         }
                         if (peer != null) {
                             peer.pc.close();
-                            peer.dataChannel.close();
+                            peer.localDataChannel.close();
                             peer = null;
                         }
                     }
@@ -444,26 +444,12 @@ public class RtcClient {
         rtcClient.emit("message", message);
     }
 
-    private void onOffer(String remoteSocketId, JSONObject payload) {
-        peer = new Peer(remoteSocketId);
-        SessionDescription sdp = null;
-        try {
-            sdp = new SessionDescription(SessionDescription.Type.OFFER, payload.getString("sdp")
-            );
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        RemotePeerSdpObserver sdpObserver = new RemotePeerSdpObserver(remoteSocketId, peer.pc);
-        //先设置远端的sdp对象
-        peer.pc.setRemoteDescription(sdpObserver, sdp);
-    }
-
     public void getEngineersOnlineStatus(List<String> engieers) {
         JSONArray engineerPostDatas = new JSONArray();
         for (String pid : engieers) {
             engineerPostDatas.put(pid);
         }
-        //发送call
+
         rtcClient.emit("onlineEngineerList", engineerPostDatas);
     }
 
@@ -472,7 +458,7 @@ public class RtcClient {
         try {
             jsonObject.put("personId", engineerId);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "", e);
         }
         //发送call
         rtcClient.emit("call", jsonObject);
@@ -500,7 +486,7 @@ public class RtcClient {
             jsonObject.put("from", rtcClient.id());
             jsonObject.put("to", remoteVideo.getRemoteSocketId());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "", e);
         }
 
         rtcClient.emit("message", jsonObject);
@@ -571,9 +557,19 @@ public class RtcClient {
      */
     private class Peer implements PeerConnection.Observer, DataChannel.Observer {
         private PeerConnection pc;
-        private DataChannel dataChannel;
+        private DataChannel localDataChannel;
+        private DataChannel remoteDataChannel;
         private String remoteSocketId;
         private Map<String, StringBuilder> receivedMsgMap = new ConcurrentHashMap<>();
+
+        public Peer(String remoteSocketId) {
+            this.pc = factory.createPeerConnection(iceServers, pcConstraints, this);
+            this.remoteSocketId = remoteSocketId;
+            pc.addStream(localMediaStream);
+            DataChannel.Init init = new DataChannel.Init();
+            this.localDataChannel = this.pc.createDataChannel("sendChannel", init);
+            this.localDataChannel.registerObserver(this);
+        }
 
         @Override
         public void onSignalingChange(PeerConnection.SignalingState signalingState) {
@@ -599,6 +595,7 @@ public class RtcClient {
             if (state.equals("COMPLETED")) {
                 onCalling = true;
             }
+
             Message msg = new Message();
             msg.what = RTC_MESSAGE_TYPE_ICECONNECTIONCHANGE;
             msg.obj = state;
@@ -627,7 +624,6 @@ public class RtcClient {
             }
         }
 
-
         @Override
         public void onAddStream(MediaStream mediaStream) {
             Log.e(TAG, "onAddStream " + mediaStream.label());
@@ -645,25 +641,11 @@ public class RtcClient {
 
         @Override
         public void onDataChannel(DataChannel dataChannel) {
-            Log.e(TAG, "onDataChannel");
-            this.dataChannel = dataChannel;
-            this.dataChannel.registerObserver(this);
-            //dataChannel.registerObserver(this);
-//            dataChannel.dispose();
+            this.remoteDataChannel = dataChannel;
         }
 
         @Override
         public void onRenegotiationNeeded() {
-
-        }
-
-
-        public Peer(String remoteSocketId) {
-            this.pc = factory.createPeerConnection(iceServers, pcConstraints, this);
-            this.remoteSocketId = remoteSocketId;
-            pc.addStream(localMediaStream);
-            DataChannel.Init init = new DataChannel.Init();
-            this.dataChannel = this.pc.createDataChannel("sendChannel", init);
 
         }
 
@@ -701,7 +683,6 @@ public class RtcClient {
                     stringBuilder = new StringBuilder();
                     stringBuilder.append(msgJson.get("content").getAsString());
                     this.receivedMsgMap.put(msgId, stringBuilder);
-
                 } else {
                     stringBuilder = this.receivedMsgMap.get(msgId);
                     stringBuilder.append(msgJson.get("content").getAsString());
@@ -717,7 +698,6 @@ public class RtcClient {
                     rtcHandler.sendMessage(message);
                 }
             }
-
         }
     }
 
@@ -751,7 +731,6 @@ public class RtcClient {
 
         @Override
         public void onSetSuccess() {
-
             //设置本地则不需要答复了，
             if (isSetLocal == false) {
                 //创建答复
@@ -794,13 +773,9 @@ public class RtcClient {
         public void onCreateSuccess(final SessionDescription sdp) {
             // 创建offer成功
             try {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("type", "offer");
-                jsonObject.put("to", this.remoteId);
                 payload = new JSONObject();
                 payload.put("type", sdp.type.canonicalForm());
                 payload.put("sdp", sdp.description);
-                jsonObject.put("payload", payload);
                 pc.setLocalDescription(this, sdp);
             } catch (JSONException e) {
                 Log.e(TAG, "", e);
@@ -826,6 +801,5 @@ public class RtcClient {
             Log.e(TAG, "onSetFailure" + s);
         }
     }
-
 
 }
