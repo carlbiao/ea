@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.AudioManager;
-import android.media.projection.MediaProjectionManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.opengl.GLSurfaceView;
@@ -59,8 +58,6 @@ import okhttp3.Response;
 public class RTCActivity extends Activity implements View.OnClickListener, View.OnTouchListener {
     boolean isVisible = false;
     private static final String TAG = "RTCActivity";
-    private static final int SEEKBAR_VOLUME_MIN = 1;
-    private static final int SEEKBAR_ZOOM_MIN = 1;
     private static final int MY_PERMISSION_REQUEST_CODE = 10000;
 
     private RemoteVideo remoteVideo = null;
@@ -70,7 +67,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
     private SeekBar volumeSeekBar = null;
     private SeekBar zoomSeekbar = null;
     private Boolean isScreenShots = false;
-    //    private FrameLayout maskLayout = null;
     private ScreenShotsView screenShotsView = null;
     private boolean isDrawPath = false;
     private RelativeLayout screenShotsContainer = null;
@@ -81,7 +77,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
     private int actionDownStartX;
     private int actionDownStartY;
     private MediaStream remoteMediaStream;
-    private MediaProjectionManager mMediaProjectionManager = null;
     private Handler screenshotHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -100,9 +95,10 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
 
             if (msg.what == RtcClient.RTC_MESSAGE_TYPE_JOIN_COMPLETE) {
                 //信令服务器连接成功回调
-                toast.setText("连接信令服务器成功");
-                toast.show();
+//                toast.setText("连接信令服务器成功");
+//                toast.show();
                 //Toast.makeText(RTCActivity.this, "", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "Connect single server complete");
             } else if (msg.what == RtcClient.RTC_MESSAGE_TYPE_ONLINE_ENGINEER_LIST) {
                 //获取工程师（们）在线状态回调
                 JSONObject jsonObject = (JSONObject) msg.obj;
@@ -164,29 +160,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         //开始应答工程师端
         RtcClient.getInstance().startCamera(RTCActivity.this, null, false, true, 1280, 720);
         RtcClient.getInstance().startAnswer(remoteVideo);
-    }
-
-    // private ScreenRecorder mRecorder = null;
-
-    //录屏核心代码
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        /**MediaProjection mediaProjection = mMediaProjectionManager.getMediaProjection(resultCode, data);
-         if (mediaProjection == null) {
-         Log.e("@@", "media projection is null");
-         return;
-         }
-         // video size
-         final int width = 1280;
-         final int height = 720;
-         File file = new File(Environment.getExternalStorageDirectory(),
-         "record-" + width + "x" + height + "-" + System.currentTimeMillis() + ".mp4");
-         final int bitrate = 6000000;
-         mRecorder = new ScreenRecorder(width, height, bitrate, 1, mediaProjection, file.getAbsolutePath());
-         mRecorder.start();
-         mButton.setText("Stop Recorder");
-         Toast.makeText(this, "Screen recorder is running...", Toast.LENGTH_SHORT).show();
-         moveTaskToBack(true);**/
     }
 
     /**
@@ -312,10 +285,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
 
 
                 remoteVideoView.setLayoutParams(params);
-
-                //remoteVideoView.layout(dLeft*(-1), dTop*(-1), dLeft*(-1) + params.width, dTop*(-1) + params.height);
-
-
             }
 
             @Override
@@ -339,7 +308,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
 
         ImageView drawImage = findViewById(R.id.img_rtc_drawpath);
         drawImage.setOnClickListener(this);
-
     }
 
 
@@ -370,7 +338,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //RtcClient.getInstance().onDestroy();
         if (remoteMediaStream != null) {
             remoteMediaStream.removeTrack(remoteMediaStream.audioTracks.get(0));
             remoteMediaStream.removeTrack(remoteMediaStream.videoTracks.get(0));
@@ -456,7 +423,7 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
         } else if (newStatus.equals("FAILED")) {
             //连接失败
         } else if (newStatus.equals("CLOSED")) {
-            Toast.makeText(RTCActivity.this, "视频已中断", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(RTCActivity.this, "视频已中断", Toast.LENGTH_SHORT).show();
             RtcClient.getInstance().hungup();
             finish();
         } else if (newStatus.equals("CHECKING")) {
@@ -513,8 +480,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
             super.onBackPressed();
         }
         // super.onBackPressed();//注释掉这行,back键不退出activity
-
-
     }
 
     @Override
@@ -528,8 +493,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                 intent.putExtra("code", remoteVideo.getId());
                 intent.putExtra("detailType", "calling");
                 startActivity(intent);
-//                Log.i(TAG, "send msg: 1234567890");
-//                RtcClient.getInstance().sendImageToPeer("1234567890");
                 break;
             case R.id.img_rtc_screenshorts:
                 startScreenShort();
@@ -575,7 +538,6 @@ public class RTCActivity extends Activity implements View.OnClickListener, View.
                         params.put("message", imageContent);
                         params.put("message_type", 2);
                         HttpUtil.doPost(ConfigData.REST_SERVICE_BASE_URL + "/manage/guidance/im/save", params, new Callback() {
-
 
                             @Override
                             public void onFailure(Call call, IOException e) {

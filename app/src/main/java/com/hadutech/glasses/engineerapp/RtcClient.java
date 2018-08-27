@@ -83,10 +83,9 @@ public class RtcClient {
 
     private RtcClient() {
         //初始化coTurn server地址
-        //TODO 根据实际情况更改
-        iceServers.add(new PeerConnection.IceServer("stun:118.89.163.26:3478"));
-        iceServers.add(new PeerConnection.IceServer("turn:118.89.163.26:3478?transport=tcp", "gyang", "Hadu2018"));
-        iceServers.add(new PeerConnection.IceServer("turn:118.89.163.26:3478?transport=udp", "gyang", "Hadu2018"));
+        iceServers.add(new PeerConnection.IceServer("stun:" + ConfigData.TURN_SERVER));
+        iceServers.add(new PeerConnection.IceServer("turn:" + ConfigData.TURN_SERVER + "?transport=tcp", ConfigData.TURN_SERVER_USER, ConfigData.TURN_SERVER_PASSWORD));
+        iceServers.add(new PeerConnection.IceServer("turn:" + ConfigData.TURN_SERVER + "?transport=udp", ConfigData.TURN_SERVER_USER, ConfigData.TURN_SERVER_PASSWORD));
 
         //初始化媒体条件
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
@@ -113,7 +112,6 @@ public class RtcClient {
      */
     private volatile boolean onCalling = false;
 
-    //private RtcListener rtcListener = null;
     private MediaStream localMediaStream = null;//本地媒体流
 
     private VideoSource videoSource = null;//本地视频源
@@ -229,7 +227,6 @@ public class RtcClient {
     public void hungup() {
         //localMediaStream.dispose();
         if (this.videoSource != null) {
-
             this.videoSource.stop();
         }
 //        if(this.audioSource != null){
@@ -240,6 +237,7 @@ public class RtcClient {
 //            }
 //
 //        }
+
         if (this.peer != null) {
             this.peer.pc.close();
             //this.peer.pc.dispose();
@@ -309,14 +307,12 @@ public class RtcClient {
                         message.what = RTC_MESSAGE_TYPE_ONLINE_ENGINEER_LIST;
                         rtcHandler.sendMessage(message);
                     } else if (messageType.equals("callAnswer")) {
-                        Log.i(TAG, "收到 callAnswer");
                         //呼叫后，工程师那边接听答复，创建offer
                         String remoteId = data.getString("from");
                         peer = new Peer(remoteId);
                         localSdpObserver = new LocalPeerSdpObserver(remoteId, peer.pc);
                         peer.pc.createOffer(localSdpObserver, pcConstraints);
                     } else if (messageType.equals("call")) {
-                        Log.i(TAG, "收到 call");
                         JSONObject streamData = data.getJSONObject("stream");
                         //收到员工的call
                         if (onCalling) {
@@ -333,7 +329,6 @@ public class RtcClient {
                         event.setId(code);
                         EventBus.getDefault().post(event);
                     } else if (messageType.equals("offer")) {
-                        Log.i(TAG, "收到 offer");
                         //收到offer
                         String remoteSocketId = (String) data.get("from");
                         JSONObject payload = data.getJSONObject("payload");
