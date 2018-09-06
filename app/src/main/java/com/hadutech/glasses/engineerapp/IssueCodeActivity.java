@@ -127,13 +127,12 @@ public class IssueCodeActivity extends AppCompatActivity implements View.OnClick
         stopButton.setOnClickListener(this);
 
         //设立标题
-        LogoActivity logoActivity = new LogoActivity(this).setIb_left(R.drawable.ic_back).setIb_left(new View.OnClickListener() {
+        LogoActivity logoActivity = new LogoActivity(this).setIb_left(R.mipmap.ic_back).setIb_left(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-
         if (StringUtils.equals("calling", detailType)) {
             logoActivity.setLogoText("远程视频列表");
             findViewById(R.id.rl_issue_voice).setVisibility(View.GONE);
