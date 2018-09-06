@@ -62,7 +62,7 @@
                     android:textSize="15dp"
                     android:hint="请输入您的工号"
                     android:singleLine="true"
-                    android:drawableLeft="@drawable/ic_identity_normal"
+                    android:drawableLeft="@mipmap/ic_identity_normal"
                     android:background="@drawable/all_edittext"
                     android:textCursorDrawable="@drawable/edit_cursor_color"/>
 
@@ -70,7 +70,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_marginRight="10dp"
-                    android:background="@drawable/ic_clear_normal"
+                    android:background="@mipmap/ic_clear_normal"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true">
                 </View>
@@ -86,7 +86,7 @@
                 android:textSize="15dp"
                 android:hint="请输入密码"
                 android:inputType="textPassword"
-                android:drawableLeft="@drawable/ic_password_normal"
+                android:drawableLeft="@mipmap/ic_password_normal"
                 android:background="@drawable/all_edittext"
                 android:textCursorDrawable="@drawable/edit_cursor_color"/>
 
